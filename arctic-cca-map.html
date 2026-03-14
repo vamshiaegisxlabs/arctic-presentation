@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RCAF/NORAD Arctic CCA Employment Analysis</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:'Courier New','Consolas',monospace;color:#8888aa}
+#topbar{position:fixed;top:0;left:0;right:0;height:48px;background:#090912;border-bottom:1px solid #151520;z-index:1000;display:flex;align-items:center;padding:0 16px;gap:24px}
+#topbar .title{font-size:13px;font-weight:700;color:#fff;letter-spacing:2px;white-space:nowrap}
+#topbar .subtitle{font-size:10px;color:#666;letter-spacing:1px;white-space:nowrap}
+#sidebar{position:fixed;top:48px;left:0;bottom:24px;width:270px;background:#0a0a0a;border-right:1px solid #151520;z-index:900;overflow-y:auto;overflow-x:hidden;padding:6px 0;scrollbar-width:thin;scrollbar-color:#222 #0a0a0a}
+#sidebar::-webkit-scrollbar{width:5px}
+#sidebar::-webkit-scrollbar-track{background:#0a0a0a}
+#sidebar::-webkit-scrollbar-thumb{background:#222}
+.section{border-bottom:1px solid #151520}
+.section-hdr{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer;user-select:none;background:#111;font-size:11px;font-weight:700;color:#aaa;letter-spacing:1.5px}
+.section-hdr:hover{background:#161620}
+.section-hdr .chv{font-size:9px;width:10px;color:#555;transition:transform .15s}
+.section-hdr .chv.open{transform:rotate(90deg)}
+.section-hdr input[type=checkbox]{accent-color:#555;margin:0}
+.section-body{display:none;padding:4px 10px 8px 26px}
+.section-body.open{display:block}
+.section-body label{display:block;font-size:10px;color:#777;padding:3px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-body label:hover{color:#bbb}
+.section-body label input[type=checkbox]{accent-color:#444;margin-right:5px;vertical-align:middle}
+.section-body select{width:100%;background:#151520;border:1px solid #222;color:#aaa;font-family:inherit;font-size:10px;padding:3px 4px;margin:4px 0;outline:none}
+.section-body select:focus{border-color:#444}
+.section-body .sub-label{font-size:9px;color:#555;padding:4px 0 2px;text-transform:uppercase;letter-spacing:1px}
+#map{position:fixed;top:48px;left:270px;right:0;bottom:24px}
+#statusbar{position:fixed;bottom:0;left:0;right:0;height:24px;background:#090912;border-top:1px solid #151520;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:10px}
+#statusbar #coords{color:#666}
+#statusbar #classification{color:#555;letter-spacing:2px}
+.maplibregl-popup-content{background:#0d0d18!important;border:1px solid #252535!important;border-radius:2px!important;padding:10px 12px!important;color:#aaa!important;font-family:'Courier New','Consolas',monospace!important;font-size:10px!important;max-width:380px!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:#252535!important}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:#252535!important}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip{border-right-color:#252535!important}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip{border-left-color:#252535!important}
+.maplibregl-popup-close-button{color:#555!important;font-size:14px!important;padding:2px 6px!important}
+.maplibregl-popup-close-button:hover{color:#fff!important;background:transparent!important}
+.popup-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;letter-spacing:1px}
+.popup-row{padding:1px 0;color:#888;font-size:10px}
+.popup-divider{border-top:1px solid #252535;margin:5px 0}
+.popup-subtitle{font-size:10px;color:#aaa;font-weight:700;margin-bottom:3px;letter-spacing:.5px}
+.popup-note{font-size:9px;color:#666;font-style:italic}
+.popup-range{display:flex;justify-content:space-between;padding:1px 0;font-size:10px}
+.popup-range .in{color:#8f8}
+.popup-range .marginal{color:#ff8}
+.popup-range .out{color:#666}
+
+.base-marker-t1{width:12px;height:12px;background:#fff;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(255,255,255,.4);transition:box-shadow .2s}
+.base-marker-t1:hover{box-shadow:0 0 16px rgba(255,255,255,.8)}
+.base-marker-t2{width:12px;height:12px;background:#ccc;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(200,200,200,.3);transition:box-shadow .2s}
+.base-marker-t2:hover{box-shadow:0 0 16px rgba(200,200,200,.7)}
+.base-marker-t3{width:12px;height:12px;background:#888;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(136,136,136,.3);transition:box-shadow .2s}
+.base-marker-t3:hover{box-shadow:0 0 16px rgba(136,136,136,.7)}
+.marker-label{position:absolute;left:14px;top:-2px;white-space:nowrap;font-size:8px;color:#999;pointer-events:none;text-shadow:0 0 4px #000,0 0 2px #000}
+.maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(5,5,8,.7)!important;color:#444!important}
+.maplibregl-ctrl-attrib a{color:#556!important}
+.north-arrow{position:absolute;top:110px;right:12px;width:32px;height:32px;z-index:800;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.north-arrow svg{width:28px;height:28px;filter:drop-shadow(0 0 3px rgba(0,0,0,.8))}
+#hover-tooltip{position:fixed;pointer-events:none;z-index:2000;background:rgba(10,10,20,.92);border:1px solid #333;border-radius:3px;padding:7px 10px;font-family:'Courier New','Consolas',monospace;font-size:10px;color:#ccc;max-width:320px;line-height:1.5;display:none;box-shadow:0 2px 12px rgba(0,0,0,.6)}
+#hover-tooltip .ht-title{font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:3px}
+#hover-tooltip .ht-type{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+#hover-tooltip .ht-row{color:#aaa;font-size:10px;padding:1px 0}
+#hover-tooltip .ht-desc{color:#999;font-size:9px;font-style:italic;margin-top:3px}
+.hover-popup .maplibregl-popup-content{background:rgba(10,10,20,.94)!important;border:1px solid #333!important;padding:8px 10px!important;max-width:320px!important}
+.hover-popup .maplibregl-popup-tip{border-top-color:#333!important;border-bottom-color:#333!important;border-left-color:#333!important;border-right-color:#333!important}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div class="title">RCAF/NORAD ARCTIC CCA EMPLOYMENT ANALYSIS</div>
+  <div class="subtitle">ACP BASING // YFQ-44A FURY &amp; XQ-58A VALKYRIE // UNCLASSIFIED</div>
+</div>
+<div id="sidebar">
+  <!-- BASING -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-basing')"> BASING
+    </div>
+    <div class="section-body" id="grp-basing">
+      <label><input type="checkbox" data-group="bases-t1" checked onchange="toggleMarkerGroup(this)"> Tier 1 — Permanent Bases</label>
+      <label><input type="checkbox" data-group="bases-t2" checked onchange="toggleMarkerGroup(this)"> Tier 2 — Rotational FOLs</label>
+      <label><input type="checkbox" data-group="bases-t3" checked onchange="toggleMarkerGroup(this)"> Tier 3 — Expeditionary</label>
+    </div>
+  </div>
+
+  <!-- RANGE RINGS -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-rings')"> RANGE RINGS
+    </div>
+    <div class="section-body" id="grp-rings">
+      <div class="sub-label">Click any airfield on the map</div>
+      <div id="ring-base-label" style="color:#aaa;font-size:11px;margin:2px 0 6px 4px;">No base selected</div>
+      <label><input type="checkbox" id="ring-f35" checked onchange="updateRangeRings()"> <span style="color:#00bfff">■</span> F-35A – 590nm CAP</label>
+      <label><input type="checkbox" id="ring-cf18" checked onchange="updateRangeRings()"> <span style="color:#ff6600">■</span> CF-18 – 400nm CAP</label>
+      <label><input type="checkbox" id="ring-fury" checked onchange="updateRangeRings()"> <span style="color:#00ff88">■</span> Fury – 700nm CAP</label>
+      <label><input type="checkbox" id="ring-valkyrie" checked onchange="updateRangeRings()"> <span style="color:#ff44ff">■</span> Valkyrie – 750nm CAP</label>
+      <label><input type="checkbox" id="ring-gambit1" checked onchange="updateRangeRings()"> <span style="color:#ffdd00">■</span> Gambit-1 – 500nm CAP/DCA</label>
+      <label><input type="checkbox" id="ring-gambit2" checked onchange="updateRangeRings()"> <span style="color:#ff3344">■</span> Gambit-2 – 900nm CAP/DCA</label>
+    </div>
+  </div>
+  <!-- THREAT AXES -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-threats')"> THREAT AXES
+    </div>
+    <div class="section-body" id="grp-threats">
+      <label><input type="checkbox" data-layers="threat-axis-1,threat-axis-1-arrow" checked onchange="toggleLayers(this)"> Pacific / Bering Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-2,threat-axis-2-arrow" checked onchange="toggleLayers(this)"> Transpolar Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-3,threat-axis-3-arrow" checked onchange="toggleLayers(this)"> Barents-Atlantic Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-4,threat-axis-4-arrow" checked onchange="toggleLayers(this)"> Central Arctic Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-5,threat-axis-5-arrow" onchange="toggleLayers(this)"> Greenland Flank</label>
+    </div>
+  </div>
+  <!-- FLASHPOINTS / AOIs -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aoi')"> FLASHPOINTS / AOIs
+    </div>
+    <div class="section-body" id="grp-aoi">
+      <label><input type="checkbox" data-layers="threat-nodes,threat-nodes-labels" checked onchange="toggleLayers(this)"> Threat Nodes</label>
+      <label><input type="checkbox" data-layers="chokepoints,chokepoints-labels" checked onchange="toggleLayers(this)"> Chokepoints</label>
+      <label><input type="checkbox" data-layers="polar-ref,polar-ref-labels" checked onchange="toggleLayers(this)"> Polar Reference</label>
+    </div>
+  </div>
+  <!-- AAR TRACKS -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aar')"> AAR TRACKS
+    </div>
+    <div class="section-body" id="grp-aar">
+      <label><input type="checkbox" data-layers="aar-west,aar-west-label" checked onchange="toggleLayers(this)"> Western Arctic</label>
+      <label><input type="checkbox" data-layers="aar-central,aar-central-label" checked onchange="toggleLayers(this)"> Central Arctic</label>
+      <label><input type="checkbox" data-layers="aar-east,aar-east-label" checked onchange="toggleLayers(this)"> Eastern Arctic</label>
+      <label><input type="checkbox" data-layers="aar-atlantic,aar-atlantic-label" onchange="toggleLayers(this)"> Trans-Atlantic</label>
+      <label><input type="checkbox" data-layers="aar-polar,aar-polar-label" onchange="toggleLayers(this)"> Transpolar</label>
+    </div>
+  </div>
+  <!-- ISR / PATROL -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-isr')"> ISR / PATROL TRACKS
+    </div>
+    <div class="section-body" id="grp-isr">
+      <label><input type="checkbox" data-layers="isr-1-fill,isr-1-line,isr-1-label" checked onchange="toggleLayers(this)"> CP-140 Beaufort</label>
+      <label><input type="checkbox" data-layers="isr-2-fill,isr-2-line,isr-2-label" checked onchange="toggleLayers(this)"> CP-140 Davis Strait</label>
+      <label><input type="checkbox" data-layers="isr-3-fill,isr-3-line,isr-3-label" onchange="toggleLayers(this)"> Allied SIGINT Track</label>
+      <label><input type="checkbox" data-layers="isr-4-fill,isr-4-line,isr-4-label" checked onchange="toggleLayers(this)"> High Arctic ISR</label>
+      <label><input type="checkbox" data-layers="isr-5-fill,isr-5-line,isr-5-label" checked onchange="toggleLayers(this)"> AWACS Eastern Arctic</label>
+      <label><input type="checkbox" data-layers="isr-6-fill,isr-6-line,isr-6-label" checked onchange="toggleLayers(this)"> AWACS Western Arctic</label>
+    </div>
+  </div>
+  <!-- SUBMARINE / SOSUS -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-sosus')"> SUBMARINE / SOSUS
+    </div>
+    <div class="section-body" id="grp-sosus">
+      <label><input type="checkbox" data-layers="sosus-giuk,sosus-giuk-label" checked onchange="toggleLayers(this)"> GIUK Line</label>
+      <label><input type="checkbox" data-layers="sosus-bering,sosus-bering-label" checked onchange="toggleLayers(this)"> Bering Line</label>
+      <label><input type="checkbox" data-layers="sub-barents-fill,sub-barents-line,sub-barents-label" checked onchange="toggleLayers(this)"> SSBN Bastion — Barents</label>
+      <label><input type="checkbox" data-layers="sub-beaufort-fill,sub-beaufort-line,sub-beaufort-label" checked onchange="toggleLayers(this)"> SSN Patrol — Beaufort</label>
+      <label><input type="checkbox" data-layers="sub-nares-fill,sub-nares-line,sub-nares-label" checked onchange="toggleLayers(this)"> ASW Barrier — Nares</label>
+    </div>
+  </div>
+</div>
+<div id="map">
+  <div class="north-arrow">
+    <svg viewBox="0 0 40 40"><polygon points="20,4 26,20 20,16 14,20" fill="#ccc" opacity="0.7"/><polygon points="20,16 26,20 20,36 14,20" fill="#444" opacity="0.5"/><text x="20" y="3" text-anchor="middle" font-size="7" fill="#888" font-family="Consolas,monospace">N</text></svg>
+  </div>
+</div>
+<div id="statusbar">
+  <span id="coords">--.----- N, --.----- W</span>
+  <span id="classification">UNCLASSIFIED // OPEN SOURCE</span>
+</div>
+<div id="hover-tooltip"></div>
+
+<script>
+// ============================================================================
+// DATA
+// ============================================================================
+const T1_BASES = [
+  {id:'coldlake',name:'CFB Cold Lake',lat:54.4167,lng:-110.2833,icao:'CYOD',rwy:'10,000ft × 151ft, asphalt (13/31 + 18/36)',units:'4 Wing, 401 TFS (CF-18 → CF-35)',note:'Primary fighter base, western NORAD alert'},
+  {id:'bagotville',name:'CFB Bagotville',lat:48.3306,lng:-71.0000,icao:'CYBG',rwy:'10,000ft × 151ft, asphalt',units:'3 Wing, 425 TFS (CF-18)',note:'Eastern NORAD alert fighter base'},
+  {id:'goosebay',name:'CFB Goose Bay',lat:53.3167,lng:-60.4167,icao:'CYYR',rwy:'10,000ft × 200ft, asphalt (NATO std)',units:'5 Wing, NATO/NORAD forward staging',note:'NATO forward operating base, Labrador'},
+  {id:'comox',name:'CFB Comox',lat:49.7167,lng:-124.9000,icao:'CYQQ',rwy:'8,000ft × 151ft, asphalt',units:'19 Wing, 407 LRP Sqn (CP-140), 442 T&R',note:'Pacific approaches, maritime patrol'},
+  {id:'trenton',name:'CFB Trenton',lat:44.1167,lng:-77.5333,icao:'CYTR',rwy:'10,000ft × 151ft, asphalt',units:'8 Wing, 436 TS (CC-177 Globemaster)',note:'Strategic airlift hub'},
+  {id:'greenwood',name:'CFB Greenwood',lat:44.9833,lng:-64.9167,icao:'CYGR',rwy:'8,000ft × 151ft, asphalt',units:'14 Wing, 405 LRP Sqn (CP-140 Aurora)',note:'Primary maritime patrol base'},
+  {id:'yellowknife',name:'Yellowknife Airport',lat:62.4628,lng:-114.4400,icao:'CYZF',rwy:'9,000ft × 151ft, asphalt',units:'NWT staging, NORAD support det',note:'Northern staging, NWT capital'},
+  {id:'whitehorse',name:'Whitehorse Airport',lat:60.7097,lng:-135.0694,icao:'CYXY',rwy:'9,501ft × 151ft, asphalt',units:'YT staging, NORAD support',note:'Yukon staging base'},
+  {id:'princegeorge',name:'Prince George Airport',lat:53.8894,lng:-122.6789,icao:'CYXS',rwy:'11,604ft × 151ft, asphalt',units:'BC northern staging (transient)',note:'BC northern corridor staging'},
+  {id:'gander',name:'Gander Airport',lat:48.9369,lng:-54.5681,icao:'CYQX',rwy:'10,600ft × 200ft, asphalt',units:'Transatlantic staging',note:'NL transatlantic gateway staging'}
+];
+
+const T2_BASES = [
+  {id:'iqaluit',name:'Iqaluit (CYFB)',lat:63.7564,lng:-68.5558,icao:'CYFB',rwy:'9,000ft × 200ft, asphalt (Arctic-rated)',units:'Eastern Arctic FOL',note:'Primary eastern Arctic FOL, paved'},
+  {id:'inuvik',name:'Inuvik (CYVQ)',lat:68.3042,lng:-133.4831,icao:'CYVQ',rwy:'6,500ft × 100ft, asphalt',units:'Western Arctic FOL',note:'Primary western Arctic FOL, paved'},
+  {id:'cambridgebay',name:'Cambridge Bay (CYCB)',lat:69.1081,lng:-105.1383,icao:'CYCB',rwy:'6,500ft × 100ft, asphalt (NWS co-loc)',units:'Central Arctic FOL, NWS',note:'Central Arctic FOL, NORAD radar co-located'},
+  {id:'rankininlet',name:'Rankin Inlet (CYRT)',lat:62.8114,lng:-92.1158,icao:'CYRT',rwy:'5,000ft × 100ft, asphalt',units:'Hudson Bay FOL',note:'Hudson Bay FOL, paved strip'},
+  {id:'hallbeach',name:'Hall Beach (CYUX)',lat:68.7761,lng:-81.2433,icao:'CYUX',rwy:'5,000ft × 75ft, gravel (NWS)',units:'Foxe Basin FOL, NWS radar',note:'Foxe Basin FOL, NWS radar site'},
+  {id:'resolutebay',name:'Resolute Bay (CYRB)',lat:74.7169,lng:-94.9694,icao:'CYRB',rwy:'6,500ft × 100ft, asphalt',units:'High Arctic FOL',note:'High Arctic FOL, paved'},
+  {id:'thule',name:'Thule/Pituffik SB',lat:76.5311,lng:-68.7031,icao:'BGTL',rwy:'10,000ft × 200ft, asphalt (USAF)',units:'US Space Force, 12 SDS',note:'Key NATO polar node, Greenland'},
+  {id:'keflavik',name:'Keflavik (BIKF)',lat:63.9850,lng:-22.6056,icao:'BIKF',rwy:'10,020ft × 151ft, asphalt (NATO)',units:'Icelandic NATO base, GIN Gap anchor',note:'GIN Gap anchor, NATO air policing'}
+];
+
+const T3_BASES = [
+  {id:'nanisivik',name:'Nanisivik Naval Fac',lat:72.6908,lng:-84.6139,icao:'—',rwy:'3,301ft × 59ft, gravel (expansion planned)',units:'Arctic naval refuelling facility',note:'Deep-water port + airstrip under development'},
+  {id:'eureka',name:'Eureka Weather Stn',lat:79.9947,lng:-85.9331,icao:'CYEU',rwy:'5,000ft × 59ft, gravel',units:'Environment Canada WX station',note:'High Arctic gravel strip, 5,000ft'},
+  {id:'alert',name:'Alert (CYLT)',lat:82.5177,lng:-62.2803,icao:'CYLT',rwy:'6,000ft × 75ft, gravel (CC-130/C-17 capable)',units:'CFS Alert — SIGINT primary',note:'Northernmost permanently inhabited place'},
+  {id:'pondinlet',name:'Pond Inlet (CYIO)',lat:72.6833,lng:-77.9667,icao:'CYIO',rwy:'4,501ft × 75ft, gravel',units:'Northern Baffin community',note:'Northern Baffin, Lancaster Sound access'},
+  {id:'arcticbay',name:'Arctic Bay (CYAB)',lat:73.0058,lng:-85.0333,icao:'CYAB',rwy:'3,901ft × 75ft, gravel',units:'Northern Baffin community',note:'Northern Baffin, Admiralty Inlet'},
+  {id:'clyderiver',name:'Clyde River (CYCY)',lat:70.4861,lng:-68.5167,icao:'CYCY',rwy:'4,501ft × 75ft, gravel',units:'Baffin east coast community',note:'Baffin east coast staging'},
+  {id:'bakerlake',name:'Baker Lake (CYBK)',lat:64.2986,lng:-96.0778,icao:'CYBK',rwy:'5,000ft × 100ft, asphalt',units:'Inland Nunavut community',note:'Inland Nunavut, paved strip'},
+  {id:'churchill',name:'Churchill (CYYQ)',lat:58.7392,lng:-94.0653,icao:'CYYQ',rwy:'5,000ft × 100ft, asphalt',units:'Historical NORAD base',note:'N Manitoba, historical NORAD significance'},
+  {id:'goosebayannex',name:'Goose Bay Annex',lat:53.3167,lng:-60.4167,icao:'CYYR',rwy:'As per CFB Goose Bay',units:'NATO apron/dispersal areas',note:'Additional dispersal areas at Goose Bay'},
+  {id:'wainwright',name:'Wainwright (PAWI)',lat:70.6383,lng:-159.9950,icao:'PAWI',rwy:'6,000ft × 100ft, gravel',units:'US Army Alaska',note:'Western approach Alaska staging'},
+  {id:'deadhorse',name:'Deadhorse/Prudhoe Bay',lat:70.1967,lng:-148.4644,icao:'PASC',rwy:'6,500ft × 151ft, gravel',units:'North Slope logistics',note:'Alaska North Slope logistics strip'}
+];
+
+const ALL_BASES = [...T1_BASES,...T2_BASES,...T3_BASES];
+
+
+
+const THREAT_NODES = [
+  {name:'Franz Josef Land',lat:80.5,lng:52.0,desc:'Tu-95/Tu-22M3 staging archipelago. Renovated airbases support long-range aviation missions into NATO/NORAD airspace.'},
+  {name:'Novaya Zemlya',lat:73.0,lng:56.0,desc:'Bomber staging + cruise missile launch zone. Historical nuclear testing site, now supports Rogachevo AB operations.'},
+  {name:'Olenya AB',lat:68.2,lng:33.5,desc:'Primary Russian Arctic strike base. Tu-22M3 regiment conducts regular Arctic patrols and simulated strike missions.'},
+  {name:'Engels-2 AB',lat:51.1,lng:46.2,desc:'Tu-160 Blackjack home base. Strategic aviation regiment capable of transpolar ALCM strikes.'},
+  {name:'Tiksi Airbase',lat:71.9,lng:128.9,desc:'Arctic bomber staging. Rebuilt infrastructure supports Tu-95MS deployments for central Arctic approaches.'},
+  {name:'Anadyr (Ugolny)',lat:64.7,lng:177.7,desc:'Pacific approach Tu-95 staging. Nearest Russian bomber base to North American ADIZ via Bering corridor.'},
+  {name:'Monchegorsk AB',lat:67.9,lng:32.9,desc:'MiG-31 interceptor base, Kola Peninsula. Provides fighter escort for bomber formations.'},
+  {name:'Severomorsk-1 AB',lat:69.0,lng:33.4,desc:'Northern Fleet naval aviation HQ. Su-33/MiG-29K operations, ASW aviation.'}
+];
+
+const CHOKEPOINTS = [
+  {name:'Bering Strait',lat:65.8,lng:-168.5,desc:'82km wide, primary Pacific corridor between Alaska and Russia.'},
+  {name:'Davis Strait',lat:67.0,lng:-57.0,desc:'Baffin Island-Greenland chokepoint. Critical for eastern Arctic maritime/air approaches.'},
+  {name:'Fram Strait',lat:79.5,lng:5.0,desc:'Greenland-Svalbard passage. Primary SSBN/SSN transit route from Barents Sea.'},
+  {name:'Nares Strait',lat:80.5,lng:-68.0,desc:'10-o\'clock axis, Lincoln Sea access. Narrow passage between Ellesmere and Greenland.'},
+  {name:'Denmark Strait',lat:67.0,lng:-24.0,desc:'Greenland-Iceland gap. Key naval chokepoint for Atlantic approaches.'},
+  {name:'GIN Gap',lat:65.0,lng:-10.0,desc:'Greenland-Iceland-Norway gap anchor. NATO SOSUS/ASW barrier.'},
+  {name:'Lancaster Sound',lat:74.1,lng:-84.0,desc:'NW Passage eastern entrance. Strategic Arctic waterway access.'},
+  {name:'McClure Strait',lat:74.6,lng:-120.0,desc:'NW Passage deep water route. Potential submarine transit corridor.'},
+  {name:'Prince of Wales Strait',lat:72.5,lng:-118.0,desc:'NW Passage alternate route via Banks Island.'}
+];
+
+const POLAR_REF = [
+  {name:'North Pole',lat:89.9,lng:0.0,desc:'Great circle convergence point. All transpolar threat axes converge here.'},
+  {name:'Canadian ADIZ West',lat:72.0,lng:-135.0,desc:'Western ADIZ nominal edge. Beaufort Sea approaches.'},
+  {name:'Canadian ADIZ East',lat:68.0,lng:-52.0,desc:'Eastern ADIZ nominal edge. Labrador Sea approaches.'}
+];
+
+const THREAT_AXES = [
+  {id:'1',label:'PACIFIC AXIS — Tu-95MS / Tu-160 ADIZ PROBE',
+   coords:[[-182.26,64.74],[-175.0,65.2],[-168.5,65.8],[-155.0,68.0],[-145.0,70.0],[-135.0,72.0]]},
+  {id:'2',label:'TRANSPOLAR AXIS — ICBM / Tu-160 DIRECT',
+   coords:[[46.2,51.1],[48,60],[50,70],[52,78],[40,83],[10,87],[-30,87.5],[-60,85],[-75,80],[-90,75]]},
+  {id:'3',label:'BARENTS-ATLANTIC AXIS — Tu-95MS / SSN TRANSIT',
+   coords:[[33.46,68.15],[32,72],[32,75],[15,78],[5,79.5],[-5,77],[-15,65],[-30,63],[-45,64],[-57,67]]},
+  {id:'4',label:'CENTRAL ARCTIC AXIS — STANDOFF CRUISE MISSILES',
+   coords:[[128.9,71.9],[120,76],[100,81],[60,85],[0,87.5],[-50,86],[-80,83],[-100,80],[-115,77],[-120,74.6]]},
+  {id:'5',label:'GREENLAND FLANK — 2-O\'CLOCK AXIS',
+   coords:[[52,80.5],[30,80],[5,79.5],[-10,77],[-20,75],[-35,72],[-45,69],[-57,67]]}
+];
+
+const AAR_TRACKS = [
+  {id:'west',label:'Western Arctic AAR Track',coords:[[-110.3,54.4],[-114.4,62.5],[-133.5,68.3],[-140.0,70.0]]},
+  {id:'central',label:'Central Arctic AAR Track',coords:[[-110.3,54.4],[-105.1,69.1],[-100.0,80.0]]},
+  {id:'east',label:'Eastern Arctic AAR Track',coords:[[-60.4,53.3],[-68.6,63.8],[-60.0,66.0]]},
+  {id:'atlantic',label:'Trans-Atlantic / GIN Gap AAR',coords:[[-60.4,53.3],[-54.6,48.9],[-22.6,64.0]]},
+  {id:'polar',label:'Transpolar AAR Support',coords:[[-110.3,54.4],[-95.0,74.7],[-90.0,82.0]]}
+];
+
+const ISR_DEFS = [
+  {id:'1',label:'CP-140 Aurora — Beaufort Sea ASW Patrol',type:'ellipse',center:[-137,71],semiMajorNm:300,semiMinorNm:100,rotation:0},
+  {id:'2',label:'CP-140 Aurora — Davis Strait ASW',type:'ellipse',center:[-55,63],semiMajorNm:100,semiMinorNm:200,rotation:0},
+  {id:'3',label:'ALLIED SIGINT TRACK (RC-135/P-8)',type:'racetrack',from:[25,70],to:[32,78],widthNm:40},
+  {id:'4',label:'HIGH ARCTIC ISR (Global Hawk / CP-140)',type:'racetrack',from:[-80,82],to:[-60,84],widthNm:50},
+  {id:'5',label:'E-3 / E-7 ORBIT — EASTERN ARCTIC ABM',type:'racetrack',from:[-75,68],to:[-55,70],widthNm:40},
+  {id:'6',label:'E-3 ORBIT — WESTERN ARCTIC ABM',type:'racetrack',from:[-130,68],to:[-110,70],widthNm:40}
+];
+
+const SOSUS_LINES = [
+  {id:'giuk',label:'GIUK SOSUS LINE (NATO)',coords:[[-42,58],[-25,63],[-5,60]]},
+  {id:'bering',label:'SOSUS BERING LINE',coords:[[-178,52],[-170,54],[-164,55],[-160,56]]}
+];
+
+const SUB_PATROL_ZONES = [
+  {id:'barents',label:'Russian SSBN Bastion — Barents Sea',center:[38,72],semiMajorNm:250,semiMinorNm:150,rotation:20,desc:'Primary Russian SSBN patrol area. Delta IV and Borei-class SSBNs operate under ice and surface patrols.'},
+  {id:'beaufort',label:'USN/RCN SSN Patrol — Beaufort Sea',center:[-140,73],semiMajorNm:200,semiMinorNm:100,rotation:-10,desc:'Under-ice SSN patrol area. Victoria-class (RCN) and Virginia-class (USN) conduct Arctic sovereignty ops.'},
+  {id:'nares',label:'Nares Strait ASW Barrier',center:[-65,79],semiMajorNm:80,semiMinorNm:40,rotation:-30,desc:'Narrow passage ASW chokepoint between Ellesmere Island and Greenland. Sonobuoy barrier zone.'}
+];
+
+const RANGE_TARGETS = [
+  {name:'Franz Josef Land',coords:[52.0,80.5]},
+  {name:'Novaya Zemlya',coords:[56.0,73.0]},
+  {name:'Bering Strait',coords:[-168.5,65.8]},
+  {name:'Fram Strait',coords:[5.0,79.5]},
+  {name:'N. Greenland (12-OC)',coords:[-20.0,75.0]}
+];
+
+const RING_TYPES = [
+  {id:'f35',label:'F-35A 590nm',radius:590,color:'#00bfff',opacity:0.7,dash:null},
+  {id:'cf18',label:'CF-18 400nm',radius:400,color:'#ff6600',opacity:0.7,dash:null},
+  {id:'fury',label:'Fury 700nm',radius:700,color:'#00ff88',opacity:0.7,dash:null},
+  {id:'valkyrie',label:'Valkyrie 750nm',radius:750,color:'#ff44ff',opacity:0.7,dash:null},
+  {id:'gambit1',label:'Gambit-1 500nm',radius:500,color:'#ffdd00',opacity:0.7,dash:null},
+  {id:'gambit2',label:'Gambit-2 900nm',radius:900,color:'#ff3344',opacity:0.7,dash:null}
+];
+
+// ============================================================================
+// MAP INIT
+// ============================================================================
+const map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: {
+      'carto-dark': {
+        type: 'raster',
+        tiles: [
+          'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+          'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+          'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+        ],
+        tileSize: 256,
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+      }
+    },
+    glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+    layers: [
+      {id:'background',type:'background',paint:{'background-color':'#0a0a10'}},
+      {id:'carto',type:'raster',source:'carto-dark',paint:{'raster-brightness-max':0.55,'raster-brightness-min':0.05,'raster-saturation':-0.6,'raster-contrast':0.15}}
+    ]
+  },
+  center: [-80, 75],
+  zoom: 2.5,
+  pitch: 45,
+  bearing: -10,
+  maxPitch: 85
+});
+
+map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}), 'top-right');
+map.addControl(new maplibregl.ScaleControl({maxWidth:150,unit:'nautical'}), 'bottom-right');
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+function nmDist(c1, c2) {
+  return turf.distance(turf.point(c1), turf.point(c2), {units:'nauticalmiles'});
+}
+
+function createEllipseCoords(centerLng, centerLat, semiMajorNm, semiMinorNm, rotationDeg, steps) {
+  steps = steps || 64;
+  const center = turf.point([centerLng, centerLat]);
+  const coords = [];
+  for (let i = 0; i <= steps; i++) {
+    const angleDeg = (360 * i) / steps;
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const rotRad = (rotationDeg * Math.PI) / 180;
+    const x = semiMajorNm * Math.cos(angleRad);
+    const y = semiMinorNm * Math.sin(angleRad);
+    const rx = x * Math.cos(rotRad) - y * Math.sin(rotRad);
+    const ry = x * Math.sin(rotRad) + y * Math.cos(rotRad);
+    const dist = Math.sqrt(rx * rx + ry * ry);
+    const bearing = (Math.atan2(rx, ry) * 180) / Math.PI;
+    const pt = turf.destination(center, dist, bearing, {units:'nauticalmiles'});
+    coords.push(pt.geometry.coordinates);
+  }
+  return [coords];
+}
+
+function createRacetrackCoords(from, to, widthNm) {
+  const line = turf.lineString([from, to]);
+  const buffered = turf.buffer(line, widthNm, {units:'nauticalmiles'});
+  return buffered ? buffered.geometry.coordinates : [[]];
+}
+
+function rangeIndicator(nm) {
+  if (nm <= 700) return {text:'IN RANGE (Fury)', cls:'in'};
+  if (nm <= 1400) return {text:'MARGINAL (AAR)', cls:'marginal'};
+  return {text:'OUT', cls:'out'};
+}
+
+function formatCoord(lat, lng) {
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lng >= 0 ? 'E' : 'W';
+  return Math.abs(lat).toFixed(2) + '°' + ns + ' ' + Math.abs(lng).toFixed(2) + '°' + ew;
+}
+
+// ============================================================================
+// BASE-TO-AOI CONNECTOR LINES
+// ============================================================================
+const ALL_AOIS = [
+  ...THREAT_NODES.map(n => ({name:n.name,lng:n.lng,lat:n.lat})),
+  ...CHOKEPOINTS.map(c => ({name:c.name,lng:c.lng,lat:c.lat})),
+  ...POLAR_REF.map(p => ({name:p.name,lng:p.lng,lat:p.lat}))
+];
+
+let _connectorTimer = null;
+
+function drawBaseConnectors(base) {
+  if (_connectorTimer) { clearTimeout(_connectorTimer); _connectorTimer = null; }
+  const features = ALL_AOIS.map(aoi => {
+    const d = nmDist([base.lng, base.lat], [aoi.lng, aoi.lat]);
+    return {
+      type:'Feature',
+      geometry:{type:'LineString',coordinates:[[base.lng,base.lat],[aoi.lng,aoi.lat]]},
+      properties:{label: aoi.name + ' — ' + Math.round(d) + ' nm'}
+    };
+  });
+  try {
+    const src = map.getSource('base-connectors-src');
+    if (src) src.setData({type:'FeatureCollection',features});
+  } catch(e) { console.error('connector draw error', e); }
+}
+
+function clearBaseConnectors() {
+  try {
+    const src = map.getSource('base-connectors-src');
+    if (src) src.setData({type:'FeatureCollection',features:[]});
+  } catch(e) {}
+}
+
+// Clear connectors on map background click (delayed to let marker click fire first)
+map.on('click', () => {
+  _connectorTimer = setTimeout(clearBaseConnectors, 50);
+});
+
+// ============================================================================
+// HOVER TOOLTIP SYSTEM
+// ============================================================================
+const _tooltip = document.getElementById('hover-tooltip');
+function showTooltip(e, html) {
+  _tooltip.innerHTML = html;
+  _tooltip.style.display = 'block';
+  positionTooltip(e);
+}
+function positionTooltip(e) {
+  const x = (e.clientX || e.pageX || 0) + 14;
+  const y = (e.clientY || e.pageY || 0) + 14;
+  const tw = _tooltip.offsetWidth;
+  const th = _tooltip.offsetHeight;
+  _tooltip.style.left = (x + tw > window.innerWidth ? x - tw - 28 : x) + 'px';
+  _tooltip.style.top = (y + th > window.innerHeight ? y - th - 28 : y) + 'px';
+}
+function hideTooltip() { _tooltip.style.display = 'none'; }
+
+function baseTooltipHtml(base, tier) {
+  return `<div class="ht-title">${base.name}</div>`
+    + `<div class="ht-type">Tier ${tier} ${tier===1?'Permanent Base':tier===2?'Rotational FOL':'Expeditionary'}</div>`
+    + `<div class="ht-row">ICAO: ${base.icao} | ${formatCoord(base.lat,base.lng)}</div>`
+    + `<div class="ht-row">Rwy: ${base.rwy}</div>`
+    + `<div class="ht-row">Units: ${base.units}</div>`
+    + `<div class="ht-desc">${base.note}</div>`;
+}
+
+// ============================================================================
+// MARKER MANAGEMENT
+// ============================================================================
+const markerGroups = {};
+let _activeBasePopup = null;
+
+function createMarkerGroup(groupId, items, markerClass, popupFn, tier) {
+  const markers = [];
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = markerClass;
+    const lbl = document.createElement('div');
+    lbl.className = 'marker-label';
+    lbl.textContent = item.name.replace(/^CFB /,'').replace(/ Airport$/,'').replace(/ \(.+\)$/,'');
+    el.appendChild(lbl);
+    const marker = new maplibregl.Marker({element:el})
+      .setLngLat([item.lng, item.lat])
+      .addTo(map);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Check if this is a toggle-off before calling selectBaseForRings
+      const sel = document.getElementById('ring-base-select');
+      const idx = ALL_BASES.findIndex(b => b.lat === item.lat && b.lng === item.lng);
+      const isToggleOff = sel && sel.value === String(idx);
+      drawBaseConnectors(item);
+      selectBaseForRings(item);
+      // Close any existing base popup
+      if (_activeBasePopup) { _activeBasePopup.remove(); _activeBasePopup = null; }
+      // Only open popup if not toggling off
+      if (!isToggleOff) {
+        _activeBasePopup = new maplibregl.Popup({maxWidth:'380px',offset:12})
+          .setLngLat([item.lng, item.lat])
+          .setHTML(popupFn(item))
+          .addTo(map);
+        _activeBasePopup.on('close', () => { _activeBasePopup = null; });
+      }
+    });
+    el.addEventListener('mouseenter', (e) => showTooltip(e, baseTooltipHtml(item, tier)));
+    el.addEventListener('mousemove', (e) => positionTooltip(e));
+    el.addEventListener('mouseleave', hideTooltip);
+    markers.push(marker);
+  });
+  markerGroups[groupId] = markers;
+}
+
+
+
+// ============================================================================
+// POPUP GENERATORS
+// ============================================================================
+function basePopup(base, tier) {
+  let html = `<div class="popup-title">${base.name}</div>`;
+  html += `<div class="popup-row">Type: T${tier} | ${formatCoord(base.lat, base.lng)}</div>`;
+  html += `<div class="popup-row">Runway: ${base.rwy}</div>`;
+  html += `<div class="popup-row">Units: ${base.units}</div>`;
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-subtitle">RANGE TO FLASHPOINTS:</div>`;
+  RANGE_TARGETS.forEach(t => {
+    const d = nmDist([base.lng, base.lat], t.coords);
+    const ri = rangeIndicator(d);
+    html += `<div class="popup-range"><span>${t.name}:</span><span>${Math.round(d)} nm <span class="${ri.cls}">[${ri.text}]</span></span></div>`;
+  });
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-note">COVERAGE: ${base.note}</div>`;
+  return html;
+}
+
+
+
+function aoiPopup(item, type) {
+  let html = `<div class="popup-title">${item.name}</div>`;
+  html += `<div class="popup-row">Type: ${type}</div>`;
+  html += `<div class="popup-row">${formatCoord(item.lat, item.lng)}</div>`;
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-subtitle">ASSESSMENT:</div>`;
+  html += `<div class="popup-row">${item.desc}</div>`;
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-subtitle">RANGE FROM KEY BASES:</div>`;
+  const coord = [item.lng, item.lat];
+  [...T1_BASES,...T2_BASES].forEach(b => {
+    const d = nmDist([b.lng, b.lat], coord);
+    let sym = '—';
+    if (d <= 700) sym = '●';
+    else if (d <= 1400) sym = '◎';
+    html += `<div class="popup-range"><span>${sym} ${b.name}:</span><span>${Math.round(d)} nm</span></div>`;
+  });
+  return html;
+}
+
+// ============================================================================
+// MAP LOAD — ADD ALL LAYERS
+// ============================================================================
+map.on('load', () => {
+  // Enable 3D globe projection (MapLibre GL v5+)
+  try {
+    map.setProjection({type:'globe'});
+    map.setSky({
+      'sky-color':'#000010',
+      'sky-horizon-blend':0.1,
+      'horizon-color':'#060615',
+      'horizon-fog-blend':0.5,
+      'fog-color':'#050510',
+      'fog-ground-blend':0.8
+    });
+  } catch(e) { console.log('Globe/sky setup:', e.message); }
+
+  // ---- BASING MARKERS ----
+  createMarkerGroup('bases-t1', T1_BASES, 'base-marker-t1', b => basePopup(b,1), 1);
+  createMarkerGroup('bases-t2', T2_BASES, 'base-marker-t2', b => basePopup(b,2), 2);
+  createMarkerGroup('bases-t3', T3_BASES, 'base-marker-t3', b => basePopup(b,3), 3);
+
+
+
+
+  // ---- THREAT AXES ----
+  THREAT_AXES.forEach(ax => {
+    const srcId = 'threat-axis-'+ax.id+'-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:ax.coords},properties:{label:ax.label}}});
+    const vis = ax.id === '5' ? 'none' : 'visible';
+    map.addLayer({id:'threat-axis-'+ax.id,type:'line',source:srcId,layout:{visibility:vis},paint:{'line-color':'#ffffff','line-width':1.5,'line-opacity':0.6,'line-dasharray':[2,2]}});
+    // Arrow labels along the line
+    map.addLayer({id:'threat-axis-'+ax.id+'-arrow',type:'symbol',source:srcId,layout:{
+      visibility:vis,
+      'symbol-placement':'line',
+      'text-field':ax.label,
+      'text-size':9,
+      'text-font':['Open Sans Regular'],
+      'text-offset':[0,-1],
+      'symbol-spacing':500,
+      'text-max-angle':30,
+      'text-allow-overlap':false
+    },paint:{'text-color':'#cccccc','text-opacity':0.6,'text-halo-color':'#050508','text-halo-width':1}});
+  });
+
+  // ---- FLASHPOINTS: THREAT NODES ----
+  map.addSource('threat-nodes-src',{type:'geojson',data:{type:'FeatureCollection',features:THREAT_NODES.map(n=>({
+    type:'Feature',geometry:{type:'Point',coordinates:[n.lng,n.lat]},properties:{name:n.name,desc:n.desc}
+  }))}});
+  map.addLayer({id:'threat-nodes',type:'circle',source:'threat-nodes-src',paint:{'circle-radius':6,'circle-color':'transparent','circle-stroke-width':2,'circle-stroke-color':'#ffffff'}});
+  map.addLayer({id:'threat-nodes-labels',type:'symbol',source:'threat-nodes-src',layout:{'text-field':['get','name'],'text-size':9,'text-offset':[0,1.5],'text-font':['Open Sans Regular']},paint:{'text-color':'#cccccc','text-opacity':0.7,'text-halo-color':'#050508','text-halo-width':1}});
+  map.on('click','threat-nodes',(e)=>{
+    const p = e.features[0].properties;
+    const n = THREAT_NODES.find(x=>x.name===p.name);
+    if(n) new maplibregl.Popup({maxWidth:'380px'}).setLngLat(e.lngLat).setHTML(aoiPopup(n,'THREAT NODE')).addTo(map);
+  });
+
+  // ---- FLASHPOINTS: CHOKEPOINTS ----
+  map.addSource('chokepoints-src',{type:'geojson',data:{type:'FeatureCollection',features:CHOKEPOINTS.map(c=>({
+    type:'Feature',geometry:{type:'Point',coordinates:[c.lng,c.lat]},properties:{name:c.name,desc:c.desc}
+  }))}});
+  map.addLayer({id:'chokepoints',type:'circle',source:'chokepoints-src',paint:{'circle-radius':5,'circle-color':'transparent','circle-stroke-width':1.5,'circle-stroke-color':'#666666'}});
+  map.addLayer({id:'chokepoints-labels',type:'symbol',source:'chokepoints-src',layout:{'text-field':['get','name'],'text-size':9,'text-offset':[0,1.5],'text-font':['Open Sans Regular']},paint:{'text-color':'#888888','text-opacity':0.6,'text-halo-color':'#050508','text-halo-width':1}});
+  map.on('click','chokepoints',(e)=>{
+    const p = e.features[0].properties;
+    const c = CHOKEPOINTS.find(x=>x.name===p.name);
+    if(c) new maplibregl.Popup({maxWidth:'380px'}).setLngLat(e.lngLat).setHTML(aoiPopup(c,'CHOKEPOINT')).addTo(map);
+  });
+
+  // ---- POLAR REFERENCE ----
+  map.addSource('polar-ref-src',{type:'geojson',data:{type:'FeatureCollection',features:POLAR_REF.map(p=>({
+    type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{name:p.name,desc:p.desc}
+  }))}});
+  map.addLayer({id:'polar-ref',type:'circle',source:'polar-ref-src',paint:{'circle-radius':4,'circle-color':'transparent','circle-stroke-width':1,'circle-stroke-color':'#555555','circle-stroke-opacity':0.5}});
+  map.addLayer({id:'polar-ref-labels',type:'symbol',source:'polar-ref-src',layout:{'text-field':['get','name'],'text-size':9,'text-offset':[0,1.3],'text-font':['Open Sans Regular']},paint:{'text-color':'#666666','text-opacity':0.5,'text-halo-color':'#050508','text-halo-width':1}});
+
+  // ---- AAR TRACKS ----
+  AAR_TRACKS.forEach(tr => {
+    const srcId = 'aar-'+tr.id+'-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:tr.coords},properties:{label:tr.label}}});
+    const vis = (tr.id==='atlantic'||tr.id==='polar') ? 'none' : 'visible';
+    map.addLayer({id:'aar-'+tr.id,type:'line',source:srcId,layout:{visibility:vis},paint:{'line-color':'#cccccc','line-width':1.5,'line-opacity':0.5,'line-dasharray':[6,4]}});
+    map.addLayer({id:'aar-'+tr.id+'-label',type:'symbol',source:srcId,layout:{
+      visibility:vis,'symbol-placement':'line','text-field':tr.label,'text-size':9,'text-font':['Open Sans Regular'],'text-offset':[0,-0.8],'symbol-spacing':400
+    },paint:{'text-color':'#cccccc','text-opacity':0.45,'text-halo-color':'#050508','text-halo-width':1}});
+  });
+
+  // ---- ISR ORBITS ----
+  ISR_DEFS.forEach(isr => {
+    let polyCoords;
+    if (isr.type === 'ellipse') {
+      polyCoords = createEllipseCoords(isr.center[0], isr.center[1], isr.semiMajorNm, isr.semiMinorNm, isr.rotation || 0, 64);
+    } else {
+      polyCoords = createRacetrackCoords(isr.from, isr.to, isr.widthNm);
+    }
+    const centroid = isr.type === 'ellipse' ? isr.center : [(isr.from[0]+isr.to[0])/2,(isr.from[1]+isr.to[1])/2];
+    const srcId = 'isr-'+isr.id+'-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'FeatureCollection',features:[
+      {type:'Feature',geometry:{type:'Polygon',coordinates:polyCoords},properties:{}},
+      {type:'Feature',geometry:{type:'Point',coordinates:centroid},properties:{label:isr.label}}
+    ]}});
+    const vis = isr.id === '3' ? 'none' : 'visible';
+    // AWACS orbits (ids 5,6) get distinct color from ISR tracks
+    const isAwacs = isr.id === '5' || isr.id === '6';
+    const fillColor = isAwacs ? '#4488ff' : '#44ddaa';
+    const lineColor = isAwacs ? '#5599ff' : '#55eebb';
+    const labelColor = isAwacs ? '#88bbff' : '#77eebb';
+    map.addLayer({id:'isr-'+isr.id+'-fill',type:'fill',source:srcId,filter:['==','$type','Polygon'],layout:{visibility:vis},paint:{'fill-color':fillColor,'fill-opacity':0.15}});
+    map.addLayer({id:'isr-'+isr.id+'-line',type:'line',source:srcId,filter:['==','$type','Polygon'],layout:{visibility:vis},paint:{'line-color':lineColor,'line-width':2,'line-opacity':0.7,'line-dasharray':[4,3]}});
+    map.addLayer({id:'isr-'+isr.id+'-label',type:'symbol',source:srcId,filter:['==','$type','Point'],layout:{visibility:vis,'text-field':['get','label'],'text-size':11,'text-font':['Open Sans Regular']},paint:{'text-color':labelColor,'text-opacity':0.85,'text-halo-color':'#050508','text-halo-width':2}});
+  });
+
+  // ---- SOSUS ----
+  SOSUS_LINES.forEach(sl => {
+    const srcId = 'sosus-'+sl.id+'-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:sl.coords},properties:{label:sl.label}}});
+    map.addLayer({id:'sosus-'+sl.id,type:'line',source:srcId,layout:{visibility:'visible'},paint:{'line-color':'#6688bb','line-width':2.5,'line-opacity':0.7,'line-dasharray':[6,4]}});
+    map.addLayer({id:'sosus-'+sl.id+'-label',type:'symbol',source:srcId,layout:{visibility:'visible','symbol-placement':'line','text-field':sl.label,'text-size':10,'text-font':['Open Sans Regular'],'text-offset':[0,-0.8],'symbol-spacing':400},paint:{'text-color':'#8899cc','text-opacity':0.8,'text-halo-color':'#050508','text-halo-width':2}});
+  });
+
+  // ---- SUBMARINE PATROL ZONES ----
+  SUB_PATROL_ZONES.forEach(sz => {
+    const polyCoords = createEllipseCoords(sz.center[0], sz.center[1], sz.semiMajorNm, sz.semiMinorNm, sz.rotation, 64);
+    const srcId = 'sub-'+sz.id+'-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'FeatureCollection',features:[
+      {type:'Feature',geometry:{type:'Polygon',coordinates:polyCoords},properties:{name:sz.label,desc:sz.desc}},
+      {type:'Feature',geometry:{type:'Point',coordinates:sz.center},properties:{label:sz.label}}
+    ]}});
+    map.addLayer({id:'sub-'+sz.id+'-fill',type:'fill',source:srcId,filter:['==','$type','Polygon'],paint:{'fill-color':'#3355aa','fill-opacity':0.12}});
+    map.addLayer({id:'sub-'+sz.id+'-line',type:'line',source:srcId,filter:['==','$type','Polygon'],paint:{'line-color':'#5577cc','line-width':2,'line-opacity':0.6,'line-dasharray':[5,3]}});
+    map.addLayer({id:'sub-'+sz.id+'-label',type:'symbol',source:srcId,filter:['==','$type','Point'],layout:{'text-field':['get','label'],'text-size':10,'text-font':['Open Sans Regular']},paint:{'text-color':'#7799dd','text-opacity':0.8,'text-halo-color':'#050508','text-halo-width':2}});
+  });
+
+  // ---- RANGE RINGS + FILLED COVERAGE + FLIGHT PATH ARCS ----
+  RING_TYPES.forEach(rt => {
+    // Filled coverage area
+    map.addSource('ring-'+rt.id+'-fill-src',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'ring-'+rt.id+'-fill',type:'fill',source:'ring-'+rt.id+'-fill-src',paint:{
+      'fill-color':rt.color,'fill-opacity':0.06
+    }});
+    // Ring outline
+    map.addSource('ring-'+rt.id+'-src',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'ring-'+rt.id,type:'line',source:'ring-'+rt.id+'-src',paint:{
+      'line-color':rt.color,'line-width':1.5,'line-opacity':0.35,
+      'line-dasharray':rt.dash || [1,0]
+    }});
+    map.addLayer({id:'ring-'+rt.id+'-label',type:'symbol',source:'ring-'+rt.id+'-src',layout:{
+      'symbol-placement':'line','text-field':rt.label,'text-size':10,
+      'text-font':['Open Sans Regular'],'text-offset':[0,-0.6],'symbol-spacing':300
+    },paint:{'text-color':rt.color,'text-opacity':0.45,'text-halo-color':'#050508','text-halo-width':1}});
+    // Flight path arcs
+    map.addSource('fp-'+rt.id+'-src',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'fp-'+rt.id,type:'line',source:'fp-'+rt.id+'-src',paint:{
+      'line-color':rt.color,'line-width':1.5,'line-opacity':0.35
+    }});
+    map.addLayer({id:'fp-'+rt.id+'-sym',type:'symbol',source:'fp-'+rt.id+'-src',layout:{
+      'symbol-placement':'line-center','text-field':['get','label'],'text-size':9,
+      'text-font':['Open Sans Regular'],'text-offset':[0,-0.7],'text-allow-overlap':false
+    },paint:{'text-color':rt.color,'text-opacity':0.45,'text-halo-color':'#050508','text-halo-width':2}});
+  });
+
+
+
+  // Cursor style for clickable layers
+  const clickableLayers = ['threat-nodes','chokepoints'];
+  clickableLayers.forEach(l => {
+    map.on('mouseenter',l,()=>map.getCanvas().style.cursor='pointer');
+    map.on('mouseleave',l,()=>map.getCanvas().style.cursor='');
+  });
+
+  // ---- HOVER TOOLTIPS FOR MAP LAYERS ----
+  const _hoverPopup = new maplibregl.Popup({closeButton:false,closeOnClick:false,maxWidth:'320px',offset:14,className:'hover-popup'});
+  let _hoverActive = false;
+
+  function showLayerTooltip(e, html) {
+    _hoverPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+    map.getCanvas().style.cursor = 'pointer';
+    _hoverActive = true;
+  }
+  function hideLayerTooltip() {
+    _hoverPopup.remove();
+    map.getCanvas().style.cursor = '';
+    _hoverActive = false;
+  }
+
+  // Threat Nodes hover
+  map.on('mouseenter','threat-nodes',(e) => {
+    const p = e.features[0].properties;
+    showLayerTooltip(e, `<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">THREAT NODE</div><div class="popup-row">${p.desc}</div>`);
+  });
+  map.on('mouseleave','threat-nodes', hideLayerTooltip);
+
+  // Chokepoints hover
+  map.on('mouseenter','chokepoints',(e) => {
+    const p = e.features[0].properties;
+    showLayerTooltip(e, `<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">CHOKEPOINT</div><div class="popup-row">${p.desc}</div>`);
+  });
+  map.on('mouseleave','chokepoints', hideLayerTooltip);
+
+  // Polar reference hover
+  map.on('mouseenter','polar-ref',(e) => {
+    const p = e.features[0].properties;
+    showLayerTooltip(e, `<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">POLAR REFERENCE</div><div class="popup-row">${p.desc}</div>`);
+  });
+  map.on('mouseleave','polar-ref', hideLayerTooltip);
+
+  // Threat axes hover (widen hit area)
+  THREAT_AXES.forEach(ax => {
+    const layerId = 'threat-axis-'+ax.id;
+    map.on('mouseenter',layerId,(e) => {
+      showLayerTooltip(e, `<div class="popup-title">${ax.label}</div><div class="popup-row" style="color:#aaa">THREAT AXIS</div>`);
+    });
+    map.on('mouseleave',layerId, hideLayerTooltip);
+  });
+
+  // AAR tracks hover
+  AAR_TRACKS.forEach(tr => {
+    const layerId = 'aar-'+tr.id;
+    map.on('mouseenter',layerId,(e) => {
+      showLayerTooltip(e, `<div class="popup-title">${tr.label}</div><div class="popup-row" style="color:#aaa">AAR TRACK</div>`);
+    });
+    map.on('mouseleave',layerId, hideLayerTooltip);
+  });
+
+  // ISR orbits hover (fill area)
+  ISR_DEFS.forEach(isr => {
+    const fillId = 'isr-'+isr.id+'-fill';
+    const lineId = 'isr-'+isr.id+'-line';
+    [fillId, lineId].forEach(layerId => {
+      map.on('mouseenter',layerId,(e) => {
+        showLayerTooltip(e, `<div class="popup-title">${isr.label}</div><div class="popup-row" style="color:#aaa">ISR / PATROL ORBIT</div>`);
+      });
+      map.on('mouseleave',layerId, hideLayerTooltip);
+    });
+  });
+
+  // SOSUS lines hover
+  SOSUS_LINES.forEach(sl => {
+    const layerId = 'sosus-'+sl.id;
+    map.on('mouseenter',layerId,(e) => {
+      showLayerTooltip(e, `<div class="popup-title">${sl.label}</div><div class="popup-row" style="color:#aaa">SOSUS LINE</div>`);
+    });
+    map.on('mouseleave',layerId, hideLayerTooltip);
+  });
+
+  // Submarine patrol zones hover
+  SUB_PATROL_ZONES.forEach(sz => {
+    const fillId = 'sub-'+sz.id+'-fill';
+    const lineId = 'sub-'+sz.id+'-line';
+    [fillId, lineId].forEach(layerId => {
+      map.on('mouseenter',layerId,(e) => {
+        showLayerTooltip(e, `<div class="popup-title">${sz.label}</div><div class="popup-row" style="color:#aaa">SUBMARINE PATROL ZONE</div><div class="popup-row">${sz.desc}</div>`);
+      });
+      map.on('mouseleave',layerId, hideLayerTooltip);
+    });
+  });
+
+  // Range rings hover
+  RING_TYPES.forEach(rt => {
+    const layerId = 'ring-'+rt.id;
+    map.on('mouseenter',layerId,(e) => {
+      const sel = document.getElementById('ring-base-select');
+      const baseIdx = sel ? sel.value : '';
+      const baseName = baseIdx !== '' ? ALL_BASES[parseInt(baseIdx)].name : 'Unknown';
+      showLayerTooltip(e, `<div class="popup-title">${rt.label}</div><div class="popup-row" style="color:#aaa">RANGE RING from ${baseName}</div><div class="popup-row">Combat radius: ${rt.radius} nm</div>`);
+    });
+    map.on('mouseleave',layerId, hideLayerTooltip);
+  });
+
+  // Flight path arcs hover
+  RING_TYPES.forEach(rt => {
+    const layerId = 'fp-'+rt.id;
+    map.on('mouseenter',layerId,(e) => {
+      const label = e.features[0].properties.label || '';
+      showLayerTooltip(e, `<div class="popup-title">${rt.label} — Flight Path</div><div class="popup-row" style="color:#aaa">${label}</div>`);
+    });
+    map.on('mouseleave',layerId, hideLayerTooltip);
+  });
+
+  // Base connector lines hover
+  map.on('mouseenter','base-connectors',(e) => {
+    const label = e.features[0].properties.label || '';
+    showLayerTooltip(e, `<div class="popup-title">Range to Target</div><div class="popup-row">${label}</div>`);
+  });
+  map.on('mouseleave','base-connectors', hideLayerTooltip);
+
+  // ---- POPULATE RING BASE SELECTOR (hidden, driven by marker clicks) ----
+  const sel = document.createElement('select');
+  sel.id = 'ring-base-select';
+  sel.style.display = 'none';
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = '';
+  sel.appendChild(defaultOpt);
+  ALL_BASES.forEach((b,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+  document.body.appendChild(sel);
+
+  // ---- BASE-TO-AOI CONNECTOR LINES (red, on top of everything) ----
+  map.addSource('base-connectors-src',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'base-connectors',type:'line',source:'base-connectors-src',paint:{'line-color':'#ff3333','line-width':2,'line-opacity':0.7,'line-dasharray':[4,3]}});
+  map.addLayer({id:'base-connectors-labels',type:'symbol',source:'base-connectors-src',layout:{
+    'symbol-placement':'line-center','text-field':['get','label'],'text-size':9,
+    'text-font':['Open Sans Regular'],'text-offset':[0,-0.8],'text-allow-overlap':true
+  },paint:{'text-color':'#ff6666','text-opacity':0.85,'text-halo-color':'#050508','text-halo-width':2}});
+
+  // ---- THREAT AXIS ANIMATION ----
+  startThreatAnimation();
+});
+
+// ============================================================================
+// COORDINATE DISPLAY
+// ============================================================================
+map.on('mousemove', (e) => {
+  const {lat,lng} = e.lngLat;
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lng >= 0 ? 'E' : 'W';
+  document.getElementById('coords').textContent =
+    Math.abs(lat).toFixed(4) + '° ' + ns + ', ' + Math.abs(lng).toFixed(4) + '° ' + ew;
+});
+
+// ============================================================================
+// TOGGLE FUNCTIONS
+// ============================================================================
+function toggleSection(hdr) {
+  const body = hdr.nextElementSibling;
+  const chv = hdr.querySelector('.chv');
+  body.classList.toggle('open');
+  chv.classList.toggle('open');
+}
+
+function toggleMaster(checkbox, groupId) {
+  const body = document.getElementById(groupId);
+  if (!body) return;
+  const checks = body.querySelectorAll('input[type=checkbox]');
+  checks.forEach(c => {
+    if (c.checked !== checkbox.checked) {
+      c.checked = checkbox.checked;
+      c.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
+function toggleMarkerGroup(checkbox) {
+  const groupId = checkbox.getAttribute('data-group');
+  const visible = checkbox.checked;
+  if (markerGroups[groupId]) {
+    markerGroups[groupId].forEach(m => m.getElement().style.display = visible ? '' : 'none');
+  }
+
+}
+
+function toggleLayers(checkbox) {
+  const layerIds = (checkbox.getAttribute('data-layers') || '').split(',').filter(Boolean);
+  const vis = checkbox.checked ? 'visible' : 'none';
+  layerIds.forEach(id => {
+    try { map.setLayoutProperty(id.trim(), 'visibility', vis); } catch(e) {}
+  });
+}
+
+// ============================================================================
+// SELECT BASE FOR RANGE RINGS (called on marker click)
+// ============================================================================
+function selectBaseForRings(item) {
+  const sel = document.getElementById('ring-base-select');
+  const idx = ALL_BASES.findIndex(b => b.lat === item.lat && b.lng === item.lng);
+  if (idx >= 0 && sel) {
+    // Toggle off if same base clicked again
+    if (sel.value === String(idx)) {
+      sel.value = '';
+      const lbl = document.getElementById('ring-base-label');
+      if (lbl) lbl.textContent = 'No base selected';
+      clearBaseConnectors();
+      updateRangeRings();
+      return;
+    }
+    sel.value = idx;
+    const lbl = document.getElementById('ring-base-label');
+    if (lbl) lbl.textContent = '\u25C9 ' + item.name;
+    updateRangeRings();
+  }
+}
+
+// ============================================================================
+// RANGE RING UPDATE
+// ============================================================================
+function updateRangeRings() {
+  const sel = document.getElementById('ring-base-select');
+  const baseIdx = sel.value;
+  // All flight path targets: THREAT_NODES + CHOKEPOINTS (major flashpoints)
+  const FP_TARGETS = THREAT_NODES.map(t => ({name:t.name,coords:[t.lng,t.lat]}))
+    .concat(CHOKEPOINTS.map(t => ({name:t.name,coords:[t.lng,t.lat]})));
+  RING_TYPES.forEach(rt => {
+    const ringSrc = map.getSource('ring-'+rt.id+'-src');
+    const fillSrc = map.getSource('ring-'+rt.id+'-fill-src');
+    const fpSrc = map.getSource('fp-'+rt.id+'-src');
+    const emptyFC = {type:'FeatureCollection',features:[]};
+    const chk = document.getElementById('ring-'+rt.id);
+    if (!chk || !chk.checked || baseIdx === '') {
+      if (ringSrc) ringSrc.setData(emptyFC);
+      if (fillSrc) fillSrc.setData(emptyFC);
+      if (fpSrc) fpSrc.setData(emptyFC);
+      return;
+    }
+    const base = ALL_BASES[parseInt(baseIdx)];
+    const origin = [base.lng, base.lat];
+    try {
+      const circle = turf.circle(origin, rt.radius, {units:'nauticalmiles',steps:72});
+      if (ringSrc) ringSrc.setData({type:'FeatureCollection',features:[circle]});
+      if (fillSrc) fillSrc.setData({type:'FeatureCollection',features:[circle]});
+    } catch(e) {
+      if (ringSrc) ringSrc.setData(emptyFC);
+      if (fillSrc) fillSrc.setData(emptyFC);
+    }
+    // Flight path arcs to reachable targets
+    const arcs = [];
+    FP_TARGETS.forEach(tgt => {
+      const distNm = turf.distance(turf.point(origin), turf.point(tgt.coords), {units:'nauticalmiles'});
+      if (distNm <= rt.radius) {
+        try {
+          const arc = turf.greatCircle(turf.point(origin), turf.point(tgt.coords), {npoints:50});
+          arc.properties = {label: tgt.name + ' (' + Math.round(distNm) + 'nm)'};
+          arcs.push(arc);
+        } catch(e) {}
+      }
+    });
+    if (fpSrc) fpSrc.setData({type:'FeatureCollection',features:arcs});
+  });
+}
+
+// ============================================================================
+// THREAT AXIS ANIMATION
+// ============================================================================
+function startThreatAnimation() {
+  const dashSequences = [
+    [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
+    [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
+    [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5],
+    [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]
+  ];
+  let prevStep = -1;
+  function animate(ts) {
+    const step = Math.floor(ts / 100) % dashSequences.length;
+    if (step !== prevStep) {
+      prevStep = step;
+      THREAT_AXES.forEach(ax => {
+        const layerId = 'threat-axis-'+ax.id;
+        try {
+          if (map.getLayoutProperty(layerId,'visibility') !== 'none') {
+            map.setPaintProperty(layerId, 'line-dasharray', dashSequences[step]);
+          }
+        } catch(e) {}
+      });
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+// ============================================================================
+// INITIAL SIDEBAR STATE — open first section
+// ============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.section-hdr');
+  if (first) toggleSection(first);
+});
+</script>
+</body>
+</html>
