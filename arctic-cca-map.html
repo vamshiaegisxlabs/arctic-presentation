@@ -134,6 +134,33 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
       <label><input type="checkbox" id="ring-valkyrie" checked onchange="updateRangeRings()"> <span style="color:#ff44ff">■</span> Valkyrie – 750nm CAP</label>
       <label><input type="checkbox" id="ring-gambit1" checked onchange="updateRangeRings()"> <span style="color:#ffdd00">■</span> Gambit-1 – 500nm CAP/DCA</label>
       <label><input type="checkbox" id="ring-gambit2" checked onchange="updateRangeRings()"> <span style="color:#ff3344">■</span> Gambit-2 – 900nm CAP/DCA</label>
+      <label><input type="checkbox" id="ring-ideal" checked onchange="updateRangeRings()"> <span style="color:#00ff00">■</span> ★ IDEAL CCA – 1,100nm</label>
+      <div style="border-top:1px solid #252535;margin:8px 0 4px;padding-top:6px">
+        <div class="sub-label" style="color:#aaa;font-size:10px;letter-spacing:1px">★ IDEAL ARCTIC CCA DESIGN NOTE</div>
+        <div style="font-size:9px;color:#777;line-height:1.6;padding:4px 0">
+          <b style="color:#00ff00">Required Combat Radius: 1,000–1,100 nm</b><br>
+          An aircraft operating from any FOL in the NWS network (Inuvik, Cambridge Bay, Resolute Bay, Iqaluit, Thule) must reach all Arctic flashpoints:<br>
+          <span style="color:#999">• Inuvik → Bering Strait: ~850 nm</span><br>
+          <span style="color:#999">• Resolute Bay → Fram Strait: ~1,100 nm</span><br>
+          <span style="color:#999">• Thule → Franz Josef Land: ~1,050 nm</span><br>
+          <span style="color:#999">• Cambridge Bay → North Pole: ~1,100 nm</span><br>
+          <span style="color:#999">• Iqaluit → Davis Strait: ~300 nm</span><br><br>
+          <b style="color:#44ddff">On-Station Endurance: 2–4 hrs</b><br>
+          Track-quality ISR (sensor dwell, multi-pass correlation) requires <b>≥2 hrs</b> on station. Kinematic engagement (intercept + re-attack) needs fuel margin for A/B maneuver + egress = <b>3–4 hrs ideal</b>.<br><br>
+          <b style="color:#ffaa00">Total Mission Profile:</b><br>
+          <span style="color:#999">• Transit out: 1.5–2 hrs (M 0.7–0.85)</span><br>
+          <span style="color:#999">• On-station: 2–4 hrs (loiter + engage)</span><br>
+          <span style="color:#999">• Transit back: 1.5–2 hrs</span><br>
+          <span style="color:#999">• Reserve: 30–45 min (Arctic divert)</span><br>
+          <span style="color:#999">• <b>Total: 5.5–8.75 hrs unrefuelled</b></span><br><br>
+          <b style="color:#ff6666">Combat Load Requirement:</b><br>
+          <span style="color:#999">• Internal: 2× AIM-260 / 2× SDB-II (min)</span><br>
+          <span style="color:#999">• ISR: EO/IR + AESA radar + ELINT</span><br>
+          <span style="color:#999">• Comms: MADL/Link-16 + BLOS SATCOM</span><br>
+          <span style="color:#999">• EW: internal RF jammer + RWR</span><br><br>
+          <b style="color:#ccc">Key Insight:</b> <span style="color:#999">No current CCA achieves all requirements. The 1,100nm ring shows the minimum reach needed. Aircraft falling short (Fury 700nm, Valkyrie 750nm) require AAR support, limiting surge and persistence. The ideal Arctic CCA needs clean-sheet range ≥ 1,000nm with 3+ hrs on station.</span>
+        </div>
+      </div>
     </div>
   </div>
   <!-- AEW / ASW BASING -->
@@ -362,7 +389,8 @@ const RING_TYPES = [
   {id:'fury',label:'Fury 700nm',radius:700,color:'#00ff88',opacity:0.7,dash:null},
   {id:'valkyrie',label:'Valkyrie 750nm',radius:750,color:'#ff44ff',opacity:0.7,dash:null},
   {id:'gambit1',label:'Gambit-1 500nm',radius:500,color:'#ffdd00',opacity:0.7,dash:null},
-  {id:'gambit2',label:'Gambit-2 900nm',radius:900,color:'#ff3344',opacity:0.7,dash:null}
+  {id:'gambit2',label:'Gambit-2 900nm',radius:900,color:'#ff3344',opacity:0.7,dash:null},
+  {id:'ideal',label:'\u2605 IDEAL CCA 1100nm',radius:1100,color:'#00ff00',opacity:0.7,dash:[6,3]}
 ];
 
 const AEW_BASES = [
@@ -1333,6 +1361,12 @@ function startThreatAnimation() {
 document.addEventListener('DOMContentLoaded', () => {
   const first = document.querySelector('.section-hdr');
   if (first) toggleSection(first);
+  // Auto-expand RANGE RINGS section to show design note
+  const ringsBody = document.getElementById('grp-rings');
+  if (ringsBody && !ringsBody.classList.contains('open')) {
+    const ringsHdr = ringsBody.previousElementSibling;
+    if (ringsHdr) toggleSection(ringsHdr);
+  }
 });
 </script>
 </body>
