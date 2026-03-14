@@ -59,6 +59,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
 .base-marker-t3{width:12px;height:12px;background:#888;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(136,136,136,.3);transition:box-shadow .2s}
 .base-marker-t3:hover{box-shadow:0 0 16px rgba(136,136,136,.7)}
 .marker-label{position:absolute;left:14px;top:-2px;white-space:nowrap;font-size:8px;color:#999;pointer-events:none;text-shadow:0 0 4px #000,0 0 2px #000}
+.radar-marker-lrr{width:10px;height:10px;clip-path:polygon(50% 0%,0% 100%,100% 100%);background:#00ffaa;cursor:pointer;filter:drop-shadow(0 0 3px rgba(0,255,170,.5));transition:filter .2s}
+.radar-marker-lrr:hover{filter:drop-shadow(0 0 8px rgba(0,255,170,.8))}
+.radar-marker-srr{width:7px;height:7px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);background:#ffaa00;cursor:pointer;filter:drop-shadow(0 0 3px rgba(255,170,0,.4));transition:filter .2s}
+.radar-marker-srr:hover{filter:drop-shadow(0 0 8px rgba(255,170,0,.7))}
+.radar-marker-bmews{width:12px;height:12px;clip-path:polygon(50% 0%,0% 100%,100% 100%);background:#ff4466;cursor:pointer;filter:drop-shadow(0 0 4px rgba(255,68,102,.5));transition:filter .2s}
+.radar-marker-bmews:hover{filter:drop-shadow(0 0 10px rgba(255,68,102,.8))}
+.radar-marker-nato{width:10px;height:10px;clip-path:polygon(50% 0%,0% 100%,100% 100%);background:#4488ff;cursor:pointer;filter:drop-shadow(0 0 3px rgba(68,136,255,.5));transition:filter .2s}
+.radar-marker-nato:hover{filter:drop-shadow(0 0 8px rgba(68,136,255,.8))}
+.aew-marker{width:12px;height:12px;clip-path:polygon(50% 0%,100% 40%,80% 100%,20% 100%,0% 40%);background:#44ddff;cursor:pointer;filter:drop-shadow(0 0 4px rgba(68,221,255,.5));transition:filter .2s}
+.aew-marker:hover{filter:drop-shadow(0 0 10px rgba(68,221,255,.8))}
+.asw-marker{width:10px;height:10px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);background:#22aadd;cursor:pointer;filter:drop-shadow(0 0 3px rgba(34,170,221,.5));transition:filter .2s}
+.asw-marker:hover{filter:drop-shadow(0 0 8px rgba(34,170,221,.8))}
 .maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(5,5,8,.7)!important;color:#444!important}
 .maplibregl-ctrl-attrib a{color:#556!important}
 .north-arrow{position:absolute;top:110px;right:12px;width:32px;height:32px;z-index:800;display:flex;align-items:center;justify-content:center;pointer-events:none}
@@ -91,6 +103,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
     </div>
   </div>
 
+  <!-- RADAR / NWS -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-radar')"> RADAR / NWS
+    </div>
+    <div class="section-body" id="grp-radar">
+      <label><input type="checkbox" data-radar="lrr" checked onchange="toggleRadarGroup(this)"> <span style="color:#00ffaa">▲</span> NWS Long-Range (LRR)</label>
+      <label><input type="checkbox" data-radar="srr" checked onchange="toggleRadarGroup(this)"> <span style="color:#ffaa00">◆</span> NWS Short-Range (SRR)</label>
+      <label><input type="checkbox" data-radar="bmews" checked onchange="toggleRadarGroup(this)"> <span style="color:#ff4466">▲</span> BMEWS / PAVE PAWS</label>
+      <label><input type="checkbox" data-radar="nato" checked onchange="toggleRadarGroup(this)"> <span style="color:#4488ff">▲</span> NATO European Radars</label>
+      <div class="sub-label">Coverage Overlay</div>
+      <label><input type="checkbox" id="radar-coverage-toggle" checked onchange="toggleRadarCoverage()"> Show Radar Coverage</label>
+    </div>
+  </div>
+
   <!-- RANGE RINGS -->
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
@@ -108,6 +136,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
       <label><input type="checkbox" id="ring-gambit2" checked onchange="updateRangeRings()"> <span style="color:#ff3344">■</span> Gambit-2 – 900nm CAP/DCA</label>
     </div>
   </div>
+  <!-- AEW / ASW BASING -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aew-asw')"> AEW / ASW BASING
+    </div>
+    <div class="section-body" id="grp-aew-asw">
+      <label><input type="checkbox" data-group="aew-bases" checked onchange="toggleMarkerGroup(this)"> <span style="color:#44ddff">⬠</span> AEW Bases (E-3/E-7/E-2)</label>
+      <label><input type="checkbox" data-group="asw-bases" checked onchange="toggleMarkerGroup(this)"> <span style="color:#22aadd">◆</span> ASW / MPA Bases (P-8/CP-140)</label>
+      <div class="sub-label">Coverage Overlay</div>
+      <label><input type="checkbox" id="aew-coverage-toggle" checked onchange="toggleAewAswCoverage()"> Show AEW Patrol Radius</label>
+      <label><input type="checkbox" id="asw-coverage-toggle" checked onchange="toggleAewAswCoverage()"> Show ASW Patrol Radius</label>
+    </div>
+  </div>
+
   <!-- THREAT AXES -->
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
@@ -321,6 +364,79 @@ const RING_TYPES = [
   {id:'gambit1',label:'Gambit-1 500nm',radius:500,color:'#ffdd00',opacity:0.7,dash:null},
   {id:'gambit2',label:'Gambit-2 900nm',radius:900,color:'#ff3344',opacity:0.7,dash:null}
 ];
+
+const AEW_BASES = [
+  // Airborne Early Warning — home bases for AEW&C aircraft
+  {id:'tinker',name:'Tinker AFB (E-3 Sentry)',lat:35.4147,lng:-97.3964,aircraft:'E-3B/C Sentry (AWACS)',unit:'552nd ACW, USAF',patrolRadiusNm:600,nation:'US',note:'Primary USAF AWACS base. 552nd Air Control Wing operates E-3 fleet.'},
+  {id:'geilenkirchen',name:'NATO AB Geilenkirchen',lat:50.9608,lng:6.0424,aircraft:'E-3A Sentry (NATO)',unit:'NAEW&C Force, NATO',patrolRadiusNm:600,nation:'NATO',note:'NATO AEW&C main operating base. Multi-nation E-3A fleet.'},
+  {id:'lossiemouth',name:'RAF Lossiemouth (E-7)',lat:57.7053,lng:-3.3392,aircraft:'E-7 Wedgetail',unit:'8 Sqn RAF',patrolRadiusNm:600,nation:'UK',note:'UK E-7 Wedgetail AEW base, replacing E-3D Sentry.'},
+  {id:'elmendorf-aew',name:'JBER Elmendorf (E-3 fwd)',lat:61.2500,lng:-149.8067,aircraft:'E-3 Sentry (fwd deploy)',unit:'PACAF/NORAD det',patrolRadiusNm:600,nation:'US',note:'Forward-deployed AWACS for NORAD Alaskan ops.'},
+  {id:'norfolk-aew',name:'NS Norfolk (E-2D)',lat:36.9372,lng:-76.2892,aircraft:'E-2D Advanced Hawkeye',unit:'Carrier AEW Wing, USN',patrolRadiusNm:350,nation:'US',note:'USN E-2D Hawkeye home base. Carrier-based AEW.'},
+  {id:'hamamatsu',name:'Hamamatsu AB (E-767)',lat:34.7506,lng:137.7028,aircraft:'E-767 AWACS',unit:'601st Sqn, JASDF',patrolRadiusNm:600,nation:'JP',note:'JASDF AWACS. Supports Pacific NORAD coordination.'}
+];
+
+const ASW_BASES = [
+  // Anti-Submarine Warfare / Maritime Patrol Aircraft bases
+  {id:'jacksonville',name:'NAS Jacksonville (P-8A)',lat:30.2358,lng:-81.6806,aircraft:'P-8A Poseidon',unit:'VP-5, VP-8, VP-10, VP-16, VP-26, VP-45',patrolRadiusNm:1200,nation:'US',note:'Primary USN MPA hub. Multiple P-8A squadrons.'},
+  {id:'whidbey',name:'NAS Whidbey Island (P-8A)',lat:48.3514,lng:-122.6553,aircraft:'P-8A Poseidon',unit:'VP-1, VP-4, VP-40, VP-46',patrolRadiusNm:1200,nation:'US',note:'Pacific Fleet MPA base. P-8A squadrons for N. Pacific/Arctic.'},
+  {id:'greenwood-asw',name:'CFB Greenwood (CP-140)',lat:44.9833,lng:-64.9167,aircraft:'CP-140 Aurora',unit:'14 Wing, 405 LRP Sqn',patrolRadiusNm:1100,nation:'CA',note:'Primary RCAF maritime patrol. ASW Atlantic approaches.'},
+  {id:'comox-asw',name:'CFB Comox (CP-140)',lat:49.7167,lng:-124.9000,aircraft:'CP-140 Aurora',unit:'19 Wing, 407 LRP Sqn',patrolRadiusNm:1100,nation:'CA',note:'RCAF Pacific maritime patrol. Bering/Arctic ASW.'},
+  {id:'lossiemouth-asw',name:'RAF Lossiemouth (P-8A)',lat:57.7053,lng:-3.3392,aircraft:'P-8A Poseidon',unit:'120 Sqn, 201 Sqn RAF',patrolRadiusNm:1200,nation:'UK',note:'UK P-8A Poseidon base. GIUK Gap / N. Atlantic ASW.'},
+  {id:'keflavik-asw',name:'Keflavík (P-8 fwd)',lat:63.9850,lng:-22.6056,aircraft:'P-8A Poseidon (rotational)',unit:'USN/NATO rotational',patrolRadiusNm:1200,nation:'IS/NATO',note:'Forward rotational MPA base. GIUK Gap ASW barrier.'},
+  {id:'andoya',name:'Andøya Air Station (P-3C)',lat:69.2925,lng:16.1442,aircraft:'P-3C Orion / P-8A',unit:'333 Sqn, RNoAF',patrolRadiusNm:1100,nation:'NO',note:'Norwegian MPA base. Barents Sea / GIUK ASW patrols.'},
+  {id:'kinloss',name:'Kinloss Barracks (hist.)',lat:57.6494,lng:-3.5606,aircraft:'P-8A staging',unit:'RAF/NATO staging',patrolRadiusNm:1200,nation:'UK',note:'Former RAF MPA base, now staging. Adjacent to Lossiemouth.'}
+];
+
+const RADAR_SITES = {
+  lrr: [
+    // NWS Long-Range Radar — AN/FPS-117, ~200nm aircraft detection
+    {id:'tin-city',name:'Tin City LRR',lat:65.5628,lng:-167.9219,system:'AN/FPS-117',rangeNm:200,nation:'US',note:'Bering Strait watch, westernmost NWS radar'},
+    {id:'cape-lisburne',name:'Cape Lisburne LRR',lat:68.8743,lng:-166.1100,system:'AN/FPS-117',rangeNm:200,nation:'US',note:'NW Alaska coast surveillance'},
+    {id:'point-barrow-lrr',name:'Point Barrow LRR',lat:71.2906,lng:-156.7886,system:'AN/FPS-117',rangeNm:200,nation:'US',note:'Northernmost US radar, Beaufort Sea watch'},
+    {id:'oliktok',name:'Oliktok LRR',lat:70.4950,lng:-149.8800,system:'AN/FPS-117',rangeNm:200,nation:'US',note:'North Slope Prudhoe Bay coverage'},
+    {id:'barter-island',name:'Barter Island LRR',lat:70.1340,lng:-143.5800,system:'AN/FPS-117',rangeNm:200,nation:'US',note:'Eastern Alaska Arctic coast'},
+    {id:'komakuk',name:'Komakuk Beach LRR',lat:69.6167,lng:-140.1833,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Yukon coast, western Canadian NWS'},
+    {id:'cape-parry-lrr',name:'Cape Parry LRR',lat:70.1689,lng:-124.7175,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'NWT Amundsen Gulf coverage'},
+    {id:'cam-bay-lrr',name:'Cambridge Bay LRR',lat:69.1081,lng:-105.1383,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Central Arctic, Victoria Island'},
+    {id:'hall-beach-lrr',name:'Hall Beach LRR',lat:68.7761,lng:-81.2433,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Foxe Basin, eastern NWS sector'},
+    {id:'cape-dyer',name:'Cape Dyer LRR (FOX Main)',lat:66.5833,lng:-61.3667,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Baffin east coast, Davis Strait watch'},
+    {id:'saglek',name:'Saglek LRR',lat:58.3300,lng:-62.5900,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Northern Labrador Sea coverage'},
+    {id:'cartwright-lrr',name:'Cartwright LRR',lat:53.6828,lng:-57.0419,system:'AN/FPS-117',rangeNm:200,nation:'CA',note:'Southern Labrador, N. Atlantic approaches'}
+  ],
+  srr: [
+    // NWS Short-Range Radar — AN/FPS-124, ~70nm gap filler
+    {id:'point-lay-srr',name:'Point Lay SRR',lat:69.7328,lng:-163.0053,system:'AN/FPS-124',rangeNm:70,nation:'US',note:'NW Alaska gap filler'},
+    {id:'wainwright-srr',name:'Wainwright SRR',lat:70.6383,lng:-159.8600,system:'AN/FPS-124',rangeNm:70,nation:'US',note:'North Slope gap filler'},
+    {id:'lonely-srr',name:'Lonely/Bullen Pt SRR',lat:70.1614,lng:-153.2350,system:'AN/FPS-124',rangeNm:70,nation:'US',note:'Beaufort coast gap filler'},
+    {id:'shingle-pt',name:'Shingle Point SRR',lat:68.9506,lng:-137.2167,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Yukon coast gap filler'},
+    {id:'pelly-bay',name:'Pelly Bay SRR',lat:68.5333,lng:-89.8167,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Gulf of Boothia gap filler'},
+    {id:'rowley-island',name:'Rowley Island SRR',lat:69.0700,lng:-79.0300,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Foxe Basin gap filler'},
+    {id:'longstaff',name:'Longstaff Bluff SRR',lat:68.9167,lng:-75.1500,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Baffin interior gap filler'},
+    {id:'dewar-lakes',name:'Dewar Lakes SRR',lat:68.6500,lng:-71.1667,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Baffin interior gap filler'},
+    {id:'cape-hooper',name:'Cape Hooper SRR',lat:68.4700,lng:-66.8000,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Baffin east coast gap filler'},
+    {id:'broughton',name:'Qikiqtarjuaq SRR',lat:67.5581,lng:-64.0306,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Baffin east coast gap filler'},
+    {id:'loks-land',name:'Loks Land SRR',lat:62.1500,lng:-64.4800,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Cumberland Sound gap filler'},
+    {id:'resolution-is',name:'Resolution Island SRR',lat:61.5833,lng:-64.6333,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Hudson Strait gap filler'},
+    {id:'cape-kakivak',name:'Cape Kakivak SRR',lat:56.5439,lng:-60.3903,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'N. Labrador gap filler'},
+    {id:'hopedale-srr',name:'Hopedale SRR',lat:55.4500,lng:-60.2167,system:'AN/FPS-124',rangeNm:70,nation:'CA',note:'Labrador coast gap filler'}
+  ],
+  bmews: [
+    // Ballistic Missile Early Warning / PAVE PAWS — aircraft detection ~250nm
+    {id:'thule-bmews',name:'Thule BMEWS',lat:76.5311,lng:-68.7031,system:'AN/FPS-132 UEWR',rangeNm:250,nation:'US',note:'Greenland BMD early warning. ICBM detection ~2600nm, aircraft ~250nm'},
+    {id:'clear-afs',name:'Clear AFS BMEWS',lat:64.2914,lng:-149.1947,system:'AN/FPS-132 UEWR',rangeNm:250,nation:'US',note:'Alaska BMD early warning. ICBM detection ~2600nm, aircraft ~250nm'},
+    {id:'fylingdales',name:'RAF Fylingdales BMEWS',lat:54.3617,lng:-0.6700,system:'AN/FPS-132 UEWR',rangeNm:250,nation:'UK',note:'UK BMD early warning. ICBM detection ~2600nm, aircraft ~250nm'},
+    {id:'cape-cod',name:'Cape Cod PAVE PAWS',lat:41.7544,lng:-70.5392,system:'AN/FPS-123',rangeNm:250,nation:'US',note:'SLBM/ICBM warning, NE US. Aircraft detection ~250nm'},
+    {id:'beale',name:'Beale AFB PAVE PAWS',lat:39.1361,lng:-121.3517,system:'AN/FPS-123',rangeNm:250,nation:'US',note:'SLBM/ICBM warning, W US. Aircraft detection ~250nm'}
+  ],
+  nato: [
+    // NATO European Arctic radar installations
+    {id:'vardo',name:'Vardø Globus Radar',lat:70.3672,lng:31.1322,system:'Globus II/III',rangeNm:250,nation:'NO',note:'Intelligence radar, Kola Peninsula surveillance'},
+    {id:'bodo',name:'Bodø CRC',lat:67.2692,lng:14.4033,system:'AN/FPS-117',rangeNm:200,nation:'NO',note:'Norwegian CRC, NATO Arctic air defense'},
+    {id:'sorreisa',name:'Sørreisa CRC',lat:69.1400,lng:18.1900,system:'AN/FPS-117',rangeNm:200,nation:'NO',note:'Northern Norway CRC, NATO Arctic air surveillance'},
+    {id:'keflavik-radar',name:'Keflavík Radar',lat:63.9850,lng:-22.6056,system:'AN/FPS-117',rangeNm:200,nation:'IS',note:'GIUK Gap surveillance, NATO air policing'},
+    {id:'saxa-vord',name:'Saxa Vord RAF',lat:60.8231,lng:-0.8519,system:'AN/TPS-77',rangeNm:200,nation:'UK',note:'Shetland Islands, GIUK Gap northern watch'}
+  ]
+};
 
 // ============================================================================
 // MAP INIT
@@ -558,6 +674,49 @@ function aoiPopup(item, type) {
   return html;
 }
 
+function aewAswPopup(s, category) {
+  const catLabel = category === 'aew' ? 'AEW Base' : 'ASW / MPA Base';
+  let html = `<div class="popup-title">${s.name}</div>`;
+  html += `<div class="popup-row">Type: ${catLabel}</div>`;
+  html += `<div class="popup-row">Aircraft: ${s.aircraft}</div>`;
+  html += `<div class="popup-row">Unit: ${s.unit}</div>`;
+  html += `<div class="popup-row">Nation: ${s.nation} | ${formatCoord(s.lat,s.lng)}</div>`;
+  html += `<div class="popup-row">Patrol Radius: ${s.patrolRadiusNm} nm</div>`;
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-note">${s.note}</div>`;
+  return html;
+}
+
+function aewAswTooltipHtml(s, category) {
+  const catLabel = category === 'aew' ? 'AEW BASE' : 'ASW / MPA BASE';
+  return `<div class="ht-title">${s.name}</div>`
+    + `<div class="ht-type">${catLabel}</div>`
+    + `<div class="ht-row">Aircraft: ${s.aircraft}</div>`
+    + `<div class="ht-row">Patrol: ${s.patrolRadiusNm} nm | ${s.nation}</div>`
+    + `<div class="ht-desc">${s.note}</div>`;
+}
+
+function radarPopup(s, type) {
+  const typeLabel = {lrr:'NWS Long-Range Radar',srr:'NWS Short-Range Radar',bmews:'BMEWS / Early Warning',nato:'NATO Air Defense Radar'}[type];
+  let html = `<div class="popup-title">${s.name}</div>`;
+  html += `<div class="popup-row">Type: ${typeLabel}</div>`;
+  html += `<div class="popup-row">System: ${s.system}</div>`;
+  html += `<div class="popup-row">Nation: ${s.nation} | ${formatCoord(s.lat,s.lng)}</div>`;
+  html += `<div class="popup-row">Detection Range: ${s.rangeNm} nm (aircraft)</div>`;
+  html += `<div class="popup-divider"></div>`;
+  html += `<div class="popup-note">${s.note}</div>`;
+  return html;
+}
+
+function radarTooltipHtml(s, type) {
+  const typeLabel = {lrr:'NWS Long-Range Radar',srr:'NWS Short-Range Radar',bmews:'BMEWS / Early Warning',nato:'NATO Air Defense Radar'}[type];
+  return `<div class="ht-title">${s.name}</div>`
+    + `<div class="ht-type">${typeLabel}</div>`
+    + `<div class="ht-row">System: ${s.system}</div>`
+    + `<div class="ht-row">Range: ${s.rangeNm} nm | ${s.nation}</div>`
+    + `<div class="ht-desc">${s.note}</div>`;
+}
+
 // ============================================================================
 // MAP LOAD — ADD ALL LAYERS
 // ============================================================================
@@ -580,7 +739,91 @@ map.on('load', () => {
   createMarkerGroup('bases-t2', T2_BASES, 'base-marker-t2', b => basePopup(b,2), 2);
   createMarkerGroup('bases-t3', T3_BASES, 'base-marker-t3', b => basePopup(b,3), 3);
 
+  // ---- AEW & ASW BASES + COVERAGE ----
+  [{cat:'aew',data:AEW_BASES,cls:'aew-marker',color:'#44ddff',fillOp:0.04,lineOp:0.25},
+   {cat:'asw',data:ASW_BASES,cls:'asw-marker',color:'#22aadd',fillOp:0.03,lineOp:0.2}].forEach(({cat,data,cls,color,fillOp,lineOp}) => {
+    const circleFeatures = data.map(s => {
+      try {
+        const c = turf.circle([s.lng,s.lat],s.patrolRadiusNm,{units:'nauticalmiles',steps:64});
+        c.properties = {name:s.name,aircraft:s.aircraft,radiusNm:s.patrolRadiusNm};
+        return c;
+      } catch(e){ return null; }
+    }).filter(Boolean);
+    const srcId = cat+'-cov-src';
+    map.addSource(srcId,{type:'geojson',data:{type:'FeatureCollection',features:circleFeatures}});
+    map.addLayer({id:cat+'-cov-fill',type:'fill',source:srcId,paint:{'fill-color':color,'fill-opacity':fillOp}});
+    map.addLayer({id:cat+'-cov-line',type:'line',source:srcId,paint:{'line-color':color,'line-width':1,'line-opacity':lineOp,'line-dasharray':[4,3]}});
+    const markers = [];
+    data.forEach(s => {
+      const el = document.createElement('div');
+      el.className = cls;
+      const lbl = document.createElement('div');
+      lbl.className = 'marker-label';
+      lbl.textContent = s.name.replace(/ \(.+\)/,'');
+      el.appendChild(lbl);
+      const marker = new maplibregl.Marker({element:el}).setLngLat([s.lng,s.lat]).addTo(map);
+      el.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        new maplibregl.Popup({maxWidth:'380px',offset:12}).setLngLat([s.lng,s.lat]).setHTML(aewAswPopup(s,cat)).addTo(map);
+      });
+      el.addEventListener('mouseenter',(e)=>showTooltip(e,aewAswTooltipHtml(s,cat)));
+      el.addEventListener('mousemove',(e)=>positionTooltip(e));
+      el.addEventListener('mouseleave',hideTooltip);
+      markers.push(marker);
+    });
+    markerGroups[cat+'-bases'] = markers;
+  });
 
+  // ---- RADAR SITES & COVERAGE RINGS ----
+  const RADAR_STYLES = {
+    lrr:{cls:'radar-marker-lrr',color:'#00ffaa',fillOp:0.06,lineOp:0.35},
+    srr:{cls:'radar-marker-srr',color:'#ffaa00',fillOp:0.04,lineOp:0.25},
+    bmews:{cls:'radar-marker-bmews',color:'#ff4466',fillOp:0.05,lineOp:0.3},
+    nato:{cls:'radar-marker-nato',color:'#4488ff',fillOp:0.06,lineOp:0.35}
+  };
+
+  Object.keys(RADAR_SITES).forEach(type => {
+    const style = RADAR_STYLES[type];
+    const sites = RADAR_SITES[type];
+
+    // Build range circle features
+    const circleFeatures = sites.map(s => {
+      try {
+        const circle = turf.circle([s.lng, s.lat], s.rangeNm, {units:'nauticalmiles',steps:64});
+        circle.properties = {name:s.name, system:s.system, rangeNm:s.rangeNm};
+        return circle;
+      } catch(e) { return null; }
+    }).filter(Boolean);
+
+    const srcId = 'radar-'+type+'-cov-src';
+    map.addSource(srcId, {type:'geojson',data:{type:'FeatureCollection',features:circleFeatures}});
+    map.addLayer({id:'radar-'+type+'-fill',type:'fill',source:srcId,paint:{'fill-color':style.color,'fill-opacity':style.fillOp}});
+    map.addLayer({id:'radar-'+type+'-line',type:'line',source:srcId,paint:{'line-color':style.color,'line-width':1,'line-opacity':style.lineOp,'line-dasharray':[3,2]}});
+
+    // Create markers
+    const markers = [];
+    sites.forEach(s => {
+      const el = document.createElement('div');
+      el.className = style.cls;
+      const lbl = document.createElement('div');
+      lbl.className = 'marker-label';
+      lbl.textContent = s.name.replace(/ LRR| SRR| BMEWS| CRC| Radar| PAVE PAWS| RAF/g,'').replace(/ \(FOX Main\)/,'');
+      el.appendChild(lbl);
+      const marker = new maplibregl.Marker({element:el}).setLngLat([s.lng,s.lat]).addTo(map);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        new maplibregl.Popup({maxWidth:'360px',offset:12})
+          .setLngLat([s.lng,s.lat])
+          .setHTML(radarPopup(s, type))
+          .addTo(map);
+      });
+      el.addEventListener('mouseenter', (e) => showTooltip(e, radarTooltipHtml(s, type)));
+      el.addEventListener('mousemove', (e) => positionTooltip(e));
+      el.addEventListener('mouseleave', hideTooltip);
+      markers.push(marker);
+    });
+    markerGroups['radar-'+type] = markers;
+  });
 
 
   // ---- THREAT AXES ----
@@ -844,6 +1087,33 @@ map.on('load', () => {
   });
   map.on('mouseleave','base-connectors', hideLayerTooltip);
 
+  // AEW/ASW coverage hovers
+  ['aew','asw'].forEach(cat => {
+    const fillId = cat+'-cov-fill';
+    const lineId = cat+'-cov-line';
+    [fillId,lineId].forEach(layerId => {
+      map.on('mouseenter',layerId,(e)=>{
+        const p = e.features[0].properties;
+        const typeLabel = cat==='aew'?'AEW PATROL RADIUS':'ASW PATROL RADIUS';
+        showLayerTooltip(e,`<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">${typeLabel} \u2014 ${p.radiusNm}nm</div><div class="popup-row">${p.aircraft}</div>`);
+      });
+      map.on('mouseleave',layerId,hideLayerTooltip);
+    });
+  });
+
+  // Radar coverage layer hovers
+  ['lrr','srr','bmews','nato'].forEach(type => {
+    const fillId = 'radar-'+type+'-fill';
+    const lineId = 'radar-'+type+'-line';
+    [fillId, lineId].forEach(layerId => {
+      map.on('mouseenter', layerId, (e) => {
+        const p = e.features[0].properties;
+        showLayerTooltip(e, `<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">${p.system} — ${p.rangeNm}nm detection range</div>`);
+      });
+      map.on('mouseleave', layerId, hideLayerTooltip);
+    });
+  });
+
   // ---- POPULATE RING BASE SELECTOR (hidden, driven by marker clicks) ----
   const sel = document.createElement('select');
   sel.id = 'ring-base-select';
@@ -918,6 +1188,43 @@ function toggleLayers(checkbox) {
   const vis = checkbox.checked ? 'visible' : 'none';
   layerIds.forEach(id => {
     try { map.setLayoutProperty(id.trim(), 'visibility', vis); } catch(e) {}
+  });
+}
+
+function toggleAewAswCoverage() {
+  ['aew','asw'].forEach(cat => {
+    const toggle = document.getElementById(cat+'-coverage-toggle');
+    const show = toggle && toggle.checked;
+    const grpCb = document.querySelector('[data-group="'+cat+'-bases"]');
+    const grpOn = grpCb && grpCb.checked;
+    ['fill','line'].forEach(suffix => {
+      try { map.setLayoutProperty(cat+'-cov-'+suffix,'visibility',(show&&grpOn)?'visible':'none'); } catch(e){}
+    });
+  });
+}
+
+function toggleRadarGroup(checkbox) {
+  const type = checkbox.getAttribute('data-radar');
+  const visible = checkbox.checked;
+  if (markerGroups['radar-'+type]) {
+    markerGroups['radar-'+type].forEach(m => m.getElement().style.display = visible ? '' : 'none');
+  }
+  const covToggle = document.getElementById('radar-coverage-toggle');
+  const showCov = covToggle && covToggle.checked;
+  ['fill','line'].forEach(suffix => {
+    try { map.setLayoutProperty('radar-'+type+'-'+suffix, 'visibility', (visible && showCov) ? 'visible' : 'none'); } catch(e) {}
+  });
+}
+
+function toggleRadarCoverage() {
+  const covToggle = document.getElementById('radar-coverage-toggle');
+  const show = covToggle && covToggle.checked;
+  ['lrr','srr','bmews','nato'].forEach(type => {
+    const grpCb = document.querySelector('[data-radar="'+type+'"]');
+    const grpOn = grpCb && grpCb.checked;
+    ['fill','line'].forEach(suffix => {
+      try { map.setLayoutProperty('radar-'+type+'-'+suffix, 'visibility', (show && grpOn) ? 'visible' : 'none'); } catch(e) {}
+    });
   });
 }
 
