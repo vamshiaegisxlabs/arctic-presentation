@@ -178,6 +178,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
     </div>
   </div>
 
+  <!-- CONTESTED ZONES / CLAIMS -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      <input type="checkbox" checked onchange="toggleMaster(this,'grp-contested')"> CONTESTED / CLAIMS
+    </div>
+    <div class="section-body" id="grp-contested">
+      <label><input type="checkbox" data-layers="cz-beaufort-fill,cz-beaufort-line,cz-beaufort-label" checked onchange="toggleLayers(this)"> <span style="color:#ff8800">■</span> Beaufort Sea (US/CA)</label>
+      <label><input type="checkbox" data-layers="cz-lomonosov-fill,cz-lomonosov-line,cz-lomonosov-label" checked onchange="toggleLayers(this)"> <span style="color:#ff3333">■</span> Lomonosov Ridge (RU/CA/DK)</label>
+      <label><input type="checkbox" data-layers="cz-nwp-fill,cz-nwp-line,cz-nwp-label" checked onchange="toggleLayers(this)"> <span style="color:#33ccff">■</span> NW Passage (CA vs Intl)</label>
+      <label><input type="checkbox" data-layers="cz-nsr-fill,cz-nsr-line,cz-nsr-label" checked onchange="toggleLayers(this)"> <span style="color:#cc33ff">■</span> Northern Sea Route (RU vs Intl)</label>
+      <label><input type="checkbox" data-layers="cz-svalbard-fill,cz-svalbard-line,cz-svalbard-label" checked onchange="toggleLayers(this)"> <span style="color:#ffcc00">■</span> Svalbard FPZ (NO/RU)</label>
+      <label><input type="checkbox" data-layers="cz-lincoln-fill,cz-lincoln-line,cz-lincoln-label" checked onchange="toggleLayers(this)"> <span style="color:#66ff66">■</span> Lincoln Sea (CA/DK)</label>
+      <label><input type="checkbox" data-layers="cz-hansi-fill,cz-hansi-line,cz-hansi-label" onchange="toggleLayers(this)"> <span style="color:#aaaaaa">■</span> Hans Island (resolved 2022)</label>
+    </div>
+  </div>
+
   <!-- THREAT AXES -->
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
@@ -367,6 +384,72 @@ const ISR_DEFS = [
 const SOSUS_LINES = [
   {id:'giuk',label:'GIUK SOSUS LINE (NATO)',coords:[[-42,58],[-25,63],[-5,60]]},
   {id:'bering',label:'SOSUS BERING LINE',coords:[[-178,52],[-170,54],[-164,55],[-160,56]]}
+];
+
+const CONTESTED_ZONES = [
+  {
+    id:'beaufort',
+    name:'Beaufort Sea Dispute',
+    claimants:'United States / Canada',
+    color:'#ff8800',
+    status:'ACTIVE — unresolved boundary dispute',
+    desc:'Wedge-shaped area of ~21,000 km\u00b2 in the Beaufort Sea. Canada claims the maritime boundary follows the 141\u00b0W land border extension. The US claims an equidistant line from the coast, creating a disputed triangle rich in oil/gas reserves.',
+    coords:[[-141.0,69.6],[-141.0,72.5],[-137.0,72.0],[-136.0,70.3],[-141.0,69.6]]
+  },
+  {
+    id:'lomonosov',
+    name:'Lomonosov Ridge / Extended Continental Shelf',
+    claimants:'Russia / Canada / Denmark (Greenland)',
+    color:'#ff3333',
+    status:'ACTIVE — overlapping UNCLOS submissions',
+    desc:'All three nations have submitted claims to the UN Commission on the Limits of the Continental Shelf (CLCS) asserting the Lomonosov Ridge is a natural extension of their continental shelf. Russia claims up to the North Pole and beyond. Canada and Denmark submitted overlapping claims. The area may contain significant hydrocarbon and mineral resources.',
+    coords:[[140,77],[155,80],[170,84],[180,87],[-180,87],[-170,88],[-140,89],[-80,89],[-50,87],[-40,84],[-30,80],[0,78],[30,77],[60,76],[100,76],[140,77]]
+  },
+  {
+    id:'nwp',
+    name:'Northwest Passage',
+    claimants:'Canada (internal waters) vs United States / EU (international strait)',
+    color:'#33ccff',
+    status:'ACTIVE — legal status contested',
+    desc:'Canada claims the Northwest Passage as Canadian Internal Waters under historic title. The US and EU maintain it is an international strait open to transit passage under UNCLOS. With Arctic ice receding, this dispute has growing strategic and commercial significance.',
+    coords:[[-128.0,71.0],[-120.0,74.5],[-110.0,75.5],[-100.0,75.0],[-95.0,74.7],[-90.0,74.0],[-85.0,73.5],[-80.0,72.5],[-75.0,70.0],[-78.0,69.0],[-85.0,68.5],[-95.0,68.0],[-105.0,68.5],[-115.0,69.5],[-128.0,71.0]]
+  },
+  {
+    id:'nsr',
+    name:'Northern Sea Route',
+    claimants:'Russia (internal waters) vs United States / NATO (international strait)',
+    color:'#cc33ff',
+    status:'ACTIVE — legal status contested',
+    desc:'Russia regulates the Northern Sea Route (NSR) as internal waters requiring permits, escort fees, and Russian pilotage. The US and other nations maintain these are international straits subject to freedom of navigation. Russia has militarized the route with rebuilt Arctic bases.',
+    coords:[[30,70],[45,72],[60,74],[80,75],[100,76],[120,76],[140,74],[160,72],[170,69],[180,68],[180,72],[170,75],[150,78],[120,80],[90,80],[60,78],[40,76],[30,74],[30,70]]
+  },
+  {
+    id:'svalbard',
+    name:'Svalbard Fisheries Protection Zone',
+    claimants:'Norway / Russia (+ others)',
+    color:'#ffcc00',
+    status:'ACTIVE — disputed jurisdiction',
+    desc:'Norway established a 200nm Fisheries Protection Zone around Svalbard. Russia (and others) argue that under the 1920 Svalbard Treaty, all signatories have equal rights to resources. Russia regularly challenges Norwegian enforcement. The zone overlaps strategic Barents Sea areas.',
+    coords:[[5,76],[20,76],[30,78],[30,80],[20,82],[10,82],[0,80],[0,78],[5,76]]
+  },
+  {
+    id:'lincoln',
+    name:'Lincoln Sea Continental Shelf Overlap',
+    claimants:'Canada / Denmark (Greenland)',
+    color:'#66ff66',
+    status:'ACTIVE — overlapping continental shelf claims',
+    desc:'Both Canada and Denmark have submitted overlapping continental shelf claims north of Ellesmere Island and Greenland in the Lincoln Sea. The two countries agreed in 2012 on a partial boundary but the extended shelf beyond 200nm remains contested at UNCLOS.',
+    coords:[[-75,82],[-65,83],[-55,84],[-45,83.5],[-40,82.5],[-50,81],[-60,80.5],[-70,81],[-75,82]]
+  },
+  {
+    id:'hansi',
+    name:'Hans Island (Tartupaluk)',
+    claimants:'Canada / Denmark — RESOLVED June 2022',
+    color:'#aaaaaa',
+    status:'RESOLVED — divided between Canada and Denmark (June 14, 2022)',
+    desc:'A 1.3 km\u00b2 island in the Nares Strait between Ellesmere Island and Greenland. Disputed for decades (the \u201cWhisky War\u201d). Resolved June 14, 2022 when Canada and Denmark agreed to split the island along a natural ridge, creating the only land border between the two countries.',
+    coords:[[-66.5,80.8],[-66.3,80.85],[-66.1,80.83],[-66.2,80.78],[-66.4,80.77],[-66.5,80.8]]
+  }
 ];
 
 const SUB_PATROL_ZONES = [
@@ -854,6 +937,20 @@ map.on('load', () => {
   });
 
 
+  // ---- CONTESTED ZONES ----
+  CONTESTED_ZONES.forEach(cz => {
+    const srcId = 'cz-'+cz.id+'-src';
+    const centroid = turf.centroid(turf.polygon([cz.coords]));
+    map.addSource(srcId,{type:'geojson',data:{type:'FeatureCollection',features:[
+      {type:'Feature',geometry:{type:'Polygon',coordinates:[cz.coords]},properties:{name:cz.name,claimants:cz.claimants,status:cz.status,desc:cz.desc}},
+      {type:'Feature',geometry:{type:'Point',coordinates:centroid.geometry.coordinates},properties:{label:cz.name}}
+    ]}});
+    const vis = cz.id === 'hansi' ? 'none' : 'visible';
+    map.addLayer({id:'cz-'+cz.id+'-fill',type:'fill',source:srcId,filter:['==','$type','Polygon'],layout:{visibility:vis},paint:{'fill-color':cz.color,'fill-opacity':0.1}});
+    map.addLayer({id:'cz-'+cz.id+'-line',type:'line',source:srcId,filter:['==','$type','Polygon'],layout:{visibility:vis},paint:{'line-color':cz.color,'line-width':2,'line-opacity':0.55,'line-dasharray':[5,3]}});
+    map.addLayer({id:'cz-'+cz.id+'-label',type:'symbol',source:srcId,filter:['==','$type','Point'],layout:{visibility:vis,'text-field':['get','label'],'text-size':10,'text-font':['Open Sans Regular']},paint:{'text-color':cz.color,'text-opacity':0.75,'text-halo-color':'#050508','text-halo-width':2}});
+  });
+
   // ---- THREAT AXES ----
   THREAT_AXES.forEach(ax => {
     const srcId = 'threat-axis-'+ax.id+'-src';
@@ -1126,6 +1223,29 @@ map.on('load', () => {
         showLayerTooltip(e,`<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">${typeLabel} \u2014 ${p.radiusNm}nm</div><div class="popup-row">${p.aircraft}</div>`);
       });
       map.on('mouseleave',layerId,hideLayerTooltip);
+    });
+  });
+
+  // Contested zone hovers & clicks
+  CONTESTED_ZONES.forEach(cz => {
+    const fillId = 'cz-'+cz.id+'-fill';
+    const lineId = 'cz-'+cz.id+'-line';
+    [fillId,lineId].forEach(layerId => {
+      map.on('mouseenter',layerId,(e)=>{
+        const p = e.features[0].properties;
+        showLayerTooltip(e,`<div class="popup-title">${p.name}</div><div class="popup-row" style="color:#aaa">CONTESTED ZONE</div><div class="popup-row">Claimants: ${p.claimants}</div><div class="popup-row" style="color:${cz.status.startsWith('RESOLVED')?'#8f8':'#ff8'}">${p.status}</div>`);
+      });
+      map.on('mouseleave',layerId,hideLayerTooltip);
+    });
+    map.on('click',fillId,(e)=>{
+      const p = e.features[0].properties;
+      new maplibregl.Popup({maxWidth:'400px'}).setLngLat(e.lngLat).setHTML(
+        `<div class="popup-title">${p.name}</div>`
+        +`<div class="popup-row">Claimants: <b>${p.claimants}</b></div>`
+        +`<div class="popup-row" style="color:${p.status.startsWith('RESOLVED')?'#8f8':'#ff8'}">${p.status}</div>`
+        +`<div class="popup-divider"></div>`
+        +`<div class="popup-row">${p.desc}</div>`
+      ).addTo(map);
     });
   });
 
