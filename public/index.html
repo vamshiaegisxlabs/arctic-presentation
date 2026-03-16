@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tmcw/togeojson@5/dist/togeojson.umd.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:'Courier New','Consolas',monospace;color:#8888aa}
@@ -82,6 +84,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
 #hover-tooltip .ht-desc{color:#999;font-size:9px;font-style:italic;margin-top:3px}
 .hover-popup .maplibregl-popup-content{background:rgba(10,10,20,.94)!important;border:1px solid #333!important;padding:8px 10px!important;max-width:320px!important}
 .hover-popup .maplibregl-popup-tip{border-top-color:#333!important;border-bottom-color:#333!important;border-left-color:#333!important;border-right-color:#333!important}
+.kmz-upload-area{border:1px dashed #333;border-radius:4px;padding:10px;margin:4px 0;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;font-size:10px;color:#666}
+.kmz-upload-area:hover{border-color:#555;background:rgba(255,255,255,.03)}
+.kmz-upload-area.drag-over{border-color:#00bfff;background:rgba(0,191,255,.06)}
+.kmz-file-item{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:10px;color:#888}
+.kmz-file-item .kmz-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:6px}
+.kmz-remove-btn{background:none;border:1px solid #333;color:#888;font-size:9px;padding:1px 5px;cursor:pointer;border-radius:2px;font-family:inherit}
+.kmz-remove-btn:hover{border-color:#ff4444;color:#ff4444}
 </style>
 </head>
 <body>
@@ -250,6 +259,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
       <label><input type="checkbox" data-layers="isr-6-fill,isr-6-line,isr-6-label" checked onchange="toggleLayers(this)"> AWACS Western Arctic</label>
     </div>
   </div>
+  <!-- KMZ / KML UPLOAD -->
+  <div class="section">
+    <div class="section-hdr" onclick="toggleSection(this)">
+      <span class="chv">▸</span>
+      KMZ / KML UPLOAD
+    </div>
+    <div class="section-body" id="grp-kmz">
+      <div class="kmz-upload-area" id="kmz-drop-zone" onclick="document.getElementById('kmz-file-input').click()">
+        <div style="font-size:16px;margin-bottom:4px">&#128194;</div>
+        Drop .kmz / .kml here<br>or click to browse
+      </div>
+      <input type="file" id="kmz-file-input" accept=".kmz,.kml" multiple style="display:none" onchange="handleKmzFiles(this.files)">
+      <div id="kmz-file-list"></div>
+    </div>
+  </div>
+
   <!-- SUBMARINE / SOSUS -->
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
@@ -1473,6 +1498,155 @@ function startThreatAnimation() {
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
+}
+
+// ============================================================================
+// KMZ / KML UPLOAD HANDLING
+// ============================================================================
+let _kmzLayerCounter = 0;
+const _kmzLayers = {}; // id -> {sourceId, layerIds, markers}
+
+(function initKmzDragDrop() {
+  const dropZone = document.getElementById('kmz-drop-zone');
+  if (!dropZone) return;
+  ['dragenter','dragover'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drag-over'); });
+  });
+  ['dragleave','drop'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('drag-over'); });
+  });
+  dropZone.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length) handleKmzFiles(e.dataTransfer.files);
+  });
+})();
+
+async function handleKmzFiles(files) {
+  for (const file of files) {
+    try {
+      let kmlText;
+      const lowerName = file.name.toLowerCase();
+      if (lowerName.endsWith('.kmz')) {
+        const arrayBuf = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuf);
+        const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+        if (!kmlFile) { alert('No KML found inside ' + file.name); continue; }
+        kmlText = await zip.files[kmlFile].async('string');
+      } else if (lowerName.endsWith('.kml')) {
+        kmlText = await file.text();
+      } else {
+        alert('Unsupported file type: ' + file.name);
+        continue;
+      }
+      const parser = new DOMParser();
+      const kmlDoc = parser.parseFromString(kmlText, 'application/xml');
+      const geojson = toGeoJSON.kml(kmlDoc);
+      if (!geojson || !geojson.features || geojson.features.length === 0) {
+        alert('No features found in ' + file.name);
+        continue;
+      }
+      addKmzToMap(file.name, geojson);
+    } catch (err) {
+      console.error('KMZ/KML parse error:', err);
+      alert('Error loading ' + file.name + ': ' + err.message);
+    }
+  }
+  // Reset input so the same file can be re-uploaded
+  document.getElementById('kmz-file-input').value = '';
+}
+
+function addKmzToMap(fileName, geojson) {
+  const id = 'kmz-' + (++_kmzLayerCounter);
+  const sourceId = id + '-src';
+  const layerIds = [];
+  const markers = [];
+
+  // Separate features by geometry type
+  const points = geojson.features.filter(f => f.geometry && f.geometry.type === 'Point');
+  const lines = geojson.features.filter(f => f.geometry && (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'));
+  const polys = geojson.features.filter(f => f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon'));
+  const other = geojson.features.filter(f => f.geometry && f.geometry.type === 'GeometryCollection');
+
+  // Pick a hue for this file
+  const hue = (_kmzLayerCounter * 67) % 360;
+  const color = 'hsl(' + hue + ',70%,60%)';
+
+  // Add non-point features as a single source
+  const nonPointFeatures = [...lines, ...polys, ...other];
+  if (nonPointFeatures.length > 0) {
+    map.addSource(sourceId, {type:'geojson', data:{type:'FeatureCollection', features: nonPointFeatures}});
+
+    // Polygon fill
+    if (polys.length > 0) {
+      const fid = id + '-fill';
+      map.addLayer({id:fid, type:'fill', source:sourceId, filter:['any',['==','$type','Polygon']], paint:{'fill-color':color, 'fill-opacity':0.15}});
+      layerIds.push(fid);
+    }
+    // Lines + polygon outlines
+    const lid = id + '-line';
+    map.addLayer({id:lid, type:'line', source:sourceId, paint:{'line-color':color, 'line-width':2, 'line-opacity':0.8}});
+    layerIds.push(lid);
+  }
+
+  // Point features as markers
+  points.forEach(f => {
+    const coords = f.geometry.coordinates;
+    const name = (f.properties && (f.properties.name || f.properties.Name)) || '';
+    const desc = (f.properties && (f.properties.description || f.properties.Description)) || '';
+    const el = document.createElement('div');
+    el.style.cssText = 'width:8px;height:8px;border-radius:50%;background:'+color+';border:1px solid rgba(255,255,255,0.5);cursor:pointer;box-shadow:0 0 4px '+color;
+    const marker = new maplibregl.Marker({element:el}).setLngLat(coords).addTo(map);
+    if (name || desc) {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let html = '';
+        if (name) html += '<div class="popup-title">' + name.replace(/</g,'&lt;') + '</div>';
+        if (desc) html += '<div class="popup-row">' + desc + '</div>';
+        new maplibregl.Popup({maxWidth:'350px',offset:10}).setLngLat(coords).setHTML(html).addTo(map);
+      });
+      el.addEventListener('mouseenter', (e) => {
+        showTooltip(e, '<div class="ht-title">' + name.replace(/</g,'&lt;') + '</div>' + (desc ? '<div class="ht-row">' + desc + '</div>' : ''));
+      });
+      el.addEventListener('mousemove', (e) => positionTooltip(e));
+      el.addEventListener('mouseleave', hideTooltip);
+    }
+    markers.push(marker);
+  });
+
+  _kmzLayers[id] = {sourceId, layerIds, markers, hasSource: nonPointFeatures.length > 0};
+
+  // Fit map to uploaded data bounds
+  try {
+    const bbox = turf.bbox(geojson);
+    map.fitBounds([[bbox[0],bbox[1]],[bbox[2],bbox[3]]], {padding:60, maxZoom:12});
+  } catch(e) {}
+
+  // Add to file list UI
+  const listEl = document.getElementById('kmz-file-list');
+  const item = document.createElement('div');
+  item.className = 'kmz-file-item';
+  item.id = 'kmz-item-' + id;
+  item.innerHTML = '<span class="kmz-name" style="color:' + color + '" title="' + fileName.replace(/"/g,'&quot;') + '">&#9632; ' + fileName.replace(/</g,'&lt;') + '</span>'
+    + '<button class="kmz-remove-btn" onclick="removeKmzLayer(\'' + id + '\')">&times;</button>';
+  listEl.appendChild(item);
+}
+
+function removeKmzLayer(id) {
+  const entry = _kmzLayers[id];
+  if (!entry) return;
+  // Remove map layers
+  entry.layerIds.forEach(lid => {
+    try { map.removeLayer(lid); } catch(e) {}
+  });
+  // Remove source
+  if (entry.hasSource) {
+    try { map.removeSource(entry.sourceId); } catch(e) {}
+  }
+  // Remove markers
+  entry.markers.forEach(m => m.remove());
+  // Remove UI item
+  const el = document.getElementById('kmz-item-' + id);
+  if (el) el.remove();
+  delete _kmzLayers[id];
 }
 
 // ============================================================================
