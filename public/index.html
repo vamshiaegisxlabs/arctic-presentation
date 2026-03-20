@@ -616,6 +616,28 @@ function nmDist(c1, c2) {
   return turf.distance(turf.point(c1), turf.point(c2), {units:'nauticalmiles'});
 }
 
+// Polar-safe circle generator — fixes antimeridian/pole-crossing artifacts
+// Uses consecutive longitude normalization so vertices trace a smooth path
+function polarSafeCircle(center, radiusNm, steps) {
+  steps = steps || 256;
+  const radiusKm = radiusNm * 1.852;
+  const originPt = turf.point(center);
+  const coords = [];
+  for (let i = 0; i < steps; i++) {
+    const bearing = (360 * i) / steps;
+    const dest = turf.destination(originPt, radiusKm, bearing, {units:'kilometers'});
+    coords.push(dest.geometry.coordinates.slice());
+  }
+  coords.push(coords[0].slice()); // close the ring
+  // Consecutive normalization: each vertex's longitude stays within 180° of its predecessor
+  // This prevents jumps at the antimeridian and produces a smooth polygon even across poles
+  for (let i = 1; i < coords.length; i++) {
+    while (coords[i][0] - coords[i-1][0] > 180) coords[i][0] -= 360;
+    while (coords[i][0] - coords[i-1][0] < -180) coords[i][0] += 360;
+  }
+  return turf.polygon([coords]);
+}
+
 function createEllipseCoords(centerLng, centerLat, semiMajorNm, semiMinorNm, rotationDeg, steps) {
   steps = steps || 64;
   const center = turf.point([centerLng, centerLat]);
@@ -880,7 +902,7 @@ map.on('load', () => {
    {cat:'asw',data:ASW_BASES,cls:'asw-marker',color:'#22aadd',fillOp:0.03,lineOp:0.2}].forEach(({cat,data,cls,color,fillOp,lineOp}) => {
     const circleFeatures = data.map(s => {
       try {
-        const c = turf.circle([s.lng,s.lat],s.patrolRadiusNm,{units:'nauticalmiles',steps:64});
+        const c = polarSafeCircle([s.lng,s.lat],s.patrolRadiusNm,256);
         c.properties = {name:s.name,aircraft:s.aircraft,radiusNm:s.patrolRadiusNm};
         return c;
       } catch(e){ return null; }
@@ -925,7 +947,7 @@ map.on('load', () => {
     // Build range circle features
     const circleFeatures = sites.map(s => {
       try {
-        const circle = turf.circle([s.lng, s.lat], s.rangeNm, {units:'nauticalmiles',steps:64});
+        const circle = polarSafeCircle([s.lng, s.lat], s.rangeNm, 256);
         circle.properties = {name:s.name, system:s.system, rangeNm:s.rangeNm};
         return circle;
       } catch(e) { return null; }
@@ -1520,7 +1542,7 @@ function updateRangeRings() {
       origin = [base.lng, base.lat];
     }
     try {
-      const circle = turf.circle(origin, rt.radius, {units:'nauticalmiles',steps:72});
+      const circle = polarSafeCircle(origin, rt.radius, 256);
       if (ringSrc) ringSrc.setData({type:'FeatureCollection',features:[circle]});
       if (fillSrc) fillSrc.setData({type:'FeatureCollection',features:[circle]});
     } catch(e) {
