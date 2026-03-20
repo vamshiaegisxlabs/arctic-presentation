@@ -116,15 +116,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-radar')"> RADAR / NWS
+      <input type="checkbox" onchange="toggleMaster(this,'grp-radar')"> RADAR / NWS
     </div>
     <div class="section-body" id="grp-radar">
-      <label><input type="checkbox" data-radar="lrr" checked onchange="toggleRadarGroup(this)"> <span style="color:#00ffaa">▲</span> NWS Long-Range (LRR)</label>
-      <label><input type="checkbox" data-radar="srr" checked onchange="toggleRadarGroup(this)"> <span style="color:#ffaa00">◆</span> NWS Short-Range (SRR)</label>
-      <label><input type="checkbox" data-radar="bmews" checked onchange="toggleRadarGroup(this)"> <span style="color:#ff4466">▲</span> BMEWS / PAVE PAWS</label>
-      <label><input type="checkbox" data-radar="nato" checked onchange="toggleRadarGroup(this)"> <span style="color:#4488ff">▲</span> NATO European Radars</label>
+      <label><input type="checkbox" data-radar="lrr" onchange="toggleRadarGroup(this)"> <span style="color:#00ffaa">▲</span> NWS Long-Range (LRR)</label>
+      <label><input type="checkbox" data-radar="srr" onchange="toggleRadarGroup(this)"> <span style="color:#ffaa00">◆</span> NWS Short-Range (SRR)</label>
+      <label><input type="checkbox" data-radar="bmews" onchange="toggleRadarGroup(this)"> <span style="color:#ff4466">▲</span> BMEWS / PAVE PAWS</label>
+      <label><input type="checkbox" data-radar="nato" onchange="toggleRadarGroup(this)"> <span style="color:#4488ff">▲</span> NATO European Radars</label>
       <div class="sub-label">Coverage Overlay</div>
-      <label><input type="checkbox" id="radar-coverage-toggle" checked onchange="toggleRadarCoverage()"> Show Radar Coverage</label>
+      <label><input type="checkbox" id="radar-coverage-toggle" onchange="toggleRadarCoverage()"> Show Radar Coverage</label>
     </div>
   </div>
 
@@ -176,14 +176,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aew-asw')"> AEW / ASW BASING
+      <input type="checkbox" onchange="toggleMaster(this,'grp-aew-asw')"> AEW / ASW BASING
     </div>
     <div class="section-body" id="grp-aew-asw">
-      <label><input type="checkbox" data-group="aew-bases" checked onchange="toggleMarkerGroup(this)"> <span style="color:#44ddff">⬠</span> AEW Bases (E-3/E-7/E-2)</label>
-      <label><input type="checkbox" data-group="asw-bases" checked onchange="toggleMarkerGroup(this)"> <span style="color:#22aadd">◆</span> ASW / MPA Bases (P-8/CP-140)</label>
+      <label><input type="checkbox" data-group="aew-bases" onchange="toggleMarkerGroup(this)"> <span style="color:#44ddff">⬠</span> AEW Bases (E-3/E-7/E-2)</label>
+      <label><input type="checkbox" data-group="asw-bases" onchange="toggleMarkerGroup(this)"> <span style="color:#22aadd">◆</span> ASW / MPA Bases (P-8/CP-140)</label>
       <div class="sub-label">Coverage Overlay</div>
-      <label><input type="checkbox" id="aew-coverage-toggle" checked onchange="toggleAewAswCoverage()"> Show AEW Patrol Radius</label>
-      <label><input type="checkbox" id="asw-coverage-toggle" checked onchange="toggleAewAswCoverage()"> Show ASW Patrol Radius</label>
+      <label><input type="checkbox" id="aew-coverage-toggle" onchange="toggleAewAswCoverage()"> Show AEW Patrol Radius</label>
+      <label><input type="checkbox" id="asw-coverage-toggle" onchange="toggleAewAswCoverage()"> Show ASW Patrol Radius</label>
     </div>
   </div>
 
@@ -191,15 +191,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-contested')"> CONTESTED / CLAIMS
+      <input type="checkbox" onchange="toggleMaster(this,'grp-contested')"> CONTESTED / CLAIMS
     </div>
     <div class="section-body" id="grp-contested">
-      <label><input type="checkbox" data-layers="cz-beaufort-fill,cz-beaufort-line,cz-beaufort-label" checked onchange="toggleLayers(this)"> <span style="color:#ff8800">■</span> Beaufort Sea (US/CA)</label>
-      <label><input type="checkbox" data-layers="cz-lomonosov-fill,cz-lomonosov-line,cz-lomonosov-label" checked onchange="toggleLayers(this)"> <span style="color:#ff3333">■</span> Lomonosov Ridge (RU/CA/DK)</label>
-      <label><input type="checkbox" data-layers="cz-nwp-fill,cz-nwp-line,cz-nwp-label" checked onchange="toggleLayers(this)"> <span style="color:#33ccff">■</span> NW Passage (CA vs Intl)</label>
-      <label><input type="checkbox" data-layers="cz-nsr-fill,cz-nsr-line,cz-nsr-label" checked onchange="toggleLayers(this)"> <span style="color:#cc33ff">■</span> Northern Sea Route (RU vs Intl)</label>
-      <label><input type="checkbox" data-layers="cz-svalbard-fill,cz-svalbard-line,cz-svalbard-label" checked onchange="toggleLayers(this)"> <span style="color:#ffcc00">■</span> Svalbard FPZ (NO/RU)</label>
-      <label><input type="checkbox" data-layers="cz-lincoln-fill,cz-lincoln-line,cz-lincoln-label" checked onchange="toggleLayers(this)"> <span style="color:#66ff66">■</span> Lincoln Sea (CA/DK)</label>
+      <label><input type="checkbox" data-layers="cz-beaufort-fill,cz-beaufort-line,cz-beaufort-label" onchange="toggleLayers(this)"> <span style="color:#ff8800">■</span> Beaufort Sea (US/CA)</label>
+      <label><input type="checkbox" data-layers="cz-lomonosov-fill,cz-lomonosov-line,cz-lomonosov-label" onchange="toggleLayers(this)"> <span style="color:#ff3333">■</span> Lomonosov Ridge (RU/CA/DK)</label>
+      <label><input type="checkbox" data-layers="cz-nwp-fill,cz-nwp-line,cz-nwp-label" onchange="toggleLayers(this)"> <span style="color:#33ccff">■</span> NW Passage (CA vs Intl)</label>
+      <label><input type="checkbox" data-layers="cz-nsr-fill,cz-nsr-line,cz-nsr-label" onchange="toggleLayers(this)"> <span style="color:#cc33ff">■</span> Northern Sea Route (RU vs Intl)</label>
+      <label><input type="checkbox" data-layers="cz-svalbard-fill,cz-svalbard-line,cz-svalbard-label" onchange="toggleLayers(this)"> <span style="color:#ffcc00">■</span> Svalbard FPZ (NO/RU)</label>
+      <label><input type="checkbox" data-layers="cz-lincoln-fill,cz-lincoln-line,cz-lincoln-label" onchange="toggleLayers(this)"> <span style="color:#66ff66">■</span> Lincoln Sea (CA/DK)</label>
       <label><input type="checkbox" data-layers="cz-hansi-fill,cz-hansi-line,cz-hansi-label" onchange="toggleLayers(this)"> <span style="color:#aaaaaa">■</span> Hans Island (resolved 2022)</label>
     </div>
   </div>
@@ -208,13 +208,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-threats')"> THREAT AXES
+      <input type="checkbox" onchange="toggleMaster(this,'grp-threats')"> THREAT AXES
     </div>
     <div class="section-body" id="grp-threats">
-      <label><input type="checkbox" data-layers="threat-axis-1,threat-axis-1-arrow" checked onchange="toggleLayers(this)"> Pacific / Bering Axis</label>
-      <label><input type="checkbox" data-layers="threat-axis-2,threat-axis-2-arrow" checked onchange="toggleLayers(this)"> Transpolar Axis</label>
-      <label><input type="checkbox" data-layers="threat-axis-3,threat-axis-3-arrow" checked onchange="toggleLayers(this)"> Barents-Atlantic Axis</label>
-      <label><input type="checkbox" data-layers="threat-axis-4,threat-axis-4-arrow" checked onchange="toggleLayers(this)"> Central Arctic Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-1,threat-axis-1-arrow" onchange="toggleLayers(this)"> Pacific / Bering Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-2,threat-axis-2-arrow" onchange="toggleLayers(this)"> Transpolar Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-3,threat-axis-3-arrow" onchange="toggleLayers(this)"> Barents-Atlantic Axis</label>
+      <label><input type="checkbox" data-layers="threat-axis-4,threat-axis-4-arrow" onchange="toggleLayers(this)"> Central Arctic Axis</label>
       <label><input type="checkbox" data-layers="threat-axis-5,threat-axis-5-arrow" onchange="toggleLayers(this)"> Greenland Flank</label>
     </div>
   </div>
@@ -222,24 +222,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aoi')"> FLASHPOINTS / AOIs
+      <input type="checkbox" onchange="toggleMaster(this,'grp-aoi')"> FLASHPOINTS / AOIs
     </div>
     <div class="section-body" id="grp-aoi">
-      <label><input type="checkbox" data-layers="threat-nodes,threat-nodes-labels" checked onchange="toggleLayers(this)"> Threat Nodes</label>
-      <label><input type="checkbox" data-layers="chokepoints,chokepoints-labels" checked onchange="toggleLayers(this)"> Chokepoints</label>
-      <label><input type="checkbox" data-layers="polar-ref,polar-ref-labels" checked onchange="toggleLayers(this)"> Polar Reference</label>
+      <label><input type="checkbox" data-layers="threat-nodes,threat-nodes-labels" onchange="toggleLayers(this)"> Threat Nodes</label>
+      <label><input type="checkbox" data-layers="chokepoints,chokepoints-labels" onchange="toggleLayers(this)"> Chokepoints</label>
+      <label><input type="checkbox" data-layers="polar-ref,polar-ref-labels" onchange="toggleLayers(this)"> Polar Reference</label>
     </div>
   </div>
   <!-- AAR TRACKS -->
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-aar')"> AAR TRACKS
+      <input type="checkbox" onchange="toggleMaster(this,'grp-aar')"> AAR TRACKS
     </div>
     <div class="section-body" id="grp-aar">
-      <label><input type="checkbox" data-layers="aar-west,aar-west-label" checked onchange="toggleLayers(this)"> Western Arctic</label>
-      <label><input type="checkbox" data-layers="aar-central,aar-central-label" checked onchange="toggleLayers(this)"> Central Arctic</label>
-      <label><input type="checkbox" data-layers="aar-east,aar-east-label" checked onchange="toggleLayers(this)"> Eastern Arctic</label>
+      <label><input type="checkbox" data-layers="aar-west,aar-west-label" onchange="toggleLayers(this)"> Western Arctic</label>
+      <label><input type="checkbox" data-layers="aar-central,aar-central-label" onchange="toggleLayers(this)"> Central Arctic</label>
+      <label><input type="checkbox" data-layers="aar-east,aar-east-label" onchange="toggleLayers(this)"> Eastern Arctic</label>
       <label><input type="checkbox" data-layers="aar-atlantic,aar-atlantic-label" onchange="toggleLayers(this)"> Trans-Atlantic</label>
       <label><input type="checkbox" data-layers="aar-polar,aar-polar-label" onchange="toggleLayers(this)"> Transpolar</label>
     </div>
@@ -248,15 +248,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-isr')"> ISR / PATROL TRACKS
+      <input type="checkbox" onchange="toggleMaster(this,'grp-isr')"> ISR / PATROL TRACKS
     </div>
     <div class="section-body" id="grp-isr">
-      <label><input type="checkbox" data-layers="isr-1-fill,isr-1-line,isr-1-label" checked onchange="toggleLayers(this)"> CP-140 Beaufort</label>
-      <label><input type="checkbox" data-layers="isr-2-fill,isr-2-line,isr-2-label" checked onchange="toggleLayers(this)"> CP-140 Davis Strait</label>
+      <label><input type="checkbox" data-layers="isr-1-fill,isr-1-line,isr-1-label" onchange="toggleLayers(this)"> CP-140 Beaufort</label>
+      <label><input type="checkbox" data-layers="isr-2-fill,isr-2-line,isr-2-label" onchange="toggleLayers(this)"> CP-140 Davis Strait</label>
       <label><input type="checkbox" data-layers="isr-3-fill,isr-3-line,isr-3-label" onchange="toggleLayers(this)"> Allied SIGINT Track</label>
-      <label><input type="checkbox" data-layers="isr-4-fill,isr-4-line,isr-4-label" checked onchange="toggleLayers(this)"> High Arctic ISR</label>
-      <label><input type="checkbox" data-layers="isr-5-fill,isr-5-line,isr-5-label" checked onchange="toggleLayers(this)"> AWACS Eastern Arctic</label>
-      <label><input type="checkbox" data-layers="isr-6-fill,isr-6-line,isr-6-label" checked onchange="toggleLayers(this)"> AWACS Western Arctic</label>
+      <label><input type="checkbox" data-layers="isr-4-fill,isr-4-line,isr-4-label" onchange="toggleLayers(this)"> High Arctic ISR</label>
+      <label><input type="checkbox" data-layers="isr-5-fill,isr-5-line,isr-5-label" onchange="toggleLayers(this)"> AWACS Eastern Arctic</label>
+      <label><input type="checkbox" data-layers="isr-6-fill,isr-6-line,isr-6-label" onchange="toggleLayers(this)"> AWACS Western Arctic</label>
     </div>
   </div>
   <!-- KMZ / KML UPLOAD -->
@@ -279,14 +279,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050508;font-family:
   <div class="section">
     <div class="section-hdr" onclick="toggleSection(this)">
       <span class="chv">▸</span>
-      <input type="checkbox" checked onchange="toggleMaster(this,'grp-sosus')"> SUBMARINE / SOSUS
+      <input type="checkbox" onchange="toggleMaster(this,'grp-sosus')"> SUBMARINE / SOSUS
     </div>
     <div class="section-body" id="grp-sosus">
-      <label><input type="checkbox" data-layers="sosus-giuk,sosus-giuk-label" checked onchange="toggleLayers(this)"> GIUK Line</label>
-      <label><input type="checkbox" data-layers="sosus-bering,sosus-bering-label" checked onchange="toggleLayers(this)"> Bering Line</label>
-      <label><input type="checkbox" data-layers="sub-barents-fill,sub-barents-line,sub-barents-label" checked onchange="toggleLayers(this)"> SSBN Bastion — Barents</label>
-      <label><input type="checkbox" data-layers="sub-beaufort-fill,sub-beaufort-line,sub-beaufort-label" checked onchange="toggleLayers(this)"> SSN Patrol — Beaufort</label>
-      <label><input type="checkbox" data-layers="sub-nares-fill,sub-nares-line,sub-nares-label" checked onchange="toggleLayers(this)"> ASW Barrier — Nares</label>
+      <label><input type="checkbox" data-layers="sosus-giuk,sosus-giuk-label" onchange="toggleLayers(this)"> GIUK Line</label>
+      <label><input type="checkbox" data-layers="sosus-bering,sosus-bering-label" onchange="toggleLayers(this)"> Bering Line</label>
+      <label><input type="checkbox" data-layers="sub-barents-fill,sub-barents-line,sub-barents-label" onchange="toggleLayers(this)"> SSBN Bastion — Barents</label>
+      <label><input type="checkbox" data-layers="sub-beaufort-fill,sub-beaufort-line,sub-beaufort-label" onchange="toggleLayers(this)"> SSN Patrol — Beaufort</label>
+      <label><input type="checkbox" data-layers="sub-nares-fill,sub-nares-line,sub-nares-label" onchange="toggleLayers(this)"> ASW Barrier — Nares</label>
     </div>
   </div>
 </div>
@@ -1212,9 +1212,14 @@ map.on('load', () => {
   RING_TYPES.forEach(rt => {
     const layerId = 'ring-'+rt.id;
     map.on('mouseenter',layerId,(e) => {
-      const sel = document.getElementById('ring-base-select');
-      const baseIdx = sel ? sel.value : '';
-      const baseName = baseIdx !== '' ? ALL_BASES[parseInt(baseIdx)].name : 'Unknown';
+      let baseName = 'Unknown';
+      if (_ringOrigin) {
+        baseName = _ringOrigin.name;
+      } else {
+        const sel = document.getElementById('ring-base-select');
+        const baseIdx = sel ? sel.value : '';
+        if (baseIdx !== '') baseName = ALL_BASES[parseInt(baseIdx)].name;
+      }
       showLayerTooltip(e, `<div class="popup-title">${rt.label}</div><div class="popup-row" style="color:#aaa">RANGE RING from ${baseName}</div><div class="popup-row">Combat radius: ${rt.radius} nm</div>`);
     });
     map.on('mouseleave',layerId, hideLayerTooltip);
@@ -1312,6 +1317,44 @@ map.on('load', () => {
 
   // ---- THREAT AXIS ANIMATION ----
   startThreatAnimation();
+
+  // ---- APPLY DEFAULT VISIBILITY (only BASING + RANGE RINGS on) ----
+  // Hide all layers/markers for unchecked sections
+  const offGroups = ['grp-radar','grp-aew-asw','grp-contested','grp-threats','grp-aoi','grp-aar','grp-isr','grp-sosus'];
+  offGroups.forEach(gid => {
+    const body = document.getElementById(gid);
+    if (!body) return;
+    body.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      if (cb.checked) return; // already unchecked
+      // Trigger the appropriate handler
+      if (cb.getAttribute('data-layers')) {
+        cb.getAttribute('data-layers').split(',').filter(Boolean).forEach(lid => {
+          try { map.setLayoutProperty(lid.trim(),'visibility','none'); } catch(e) {}
+        });
+      }
+      if (cb.getAttribute('data-group')) {
+        const grpId = cb.getAttribute('data-group');
+        if (markerGroups[grpId]) markerGroups[grpId].forEach(m => m.getElement().style.display = 'none');
+        // Also hide coverage layers
+        ['fill','line'].forEach(s => {
+          try { map.setLayoutProperty(grpId.replace('bases','cov')+'-'+s,'visibility','none'); } catch(e) {}
+        });
+      }
+      if (cb.getAttribute('data-radar')) {
+        const type = cb.getAttribute('data-radar');
+        if (markerGroups['radar-'+type]) markerGroups['radar-'+type].forEach(m => m.getElement().style.display = 'none');
+        ['fill','line'].forEach(s => {
+          try { map.setLayoutProperty('radar-'+type+'-'+s,'visibility','none'); } catch(e) {}
+        });
+      }
+      if (cb.id === 'aew-coverage-toggle' || cb.id === 'asw-coverage-toggle') {
+        const cat = cb.id.startsWith('aew') ? 'aew' : 'asw';
+        ['fill','line'].forEach(s => {
+          try { map.setLayoutProperty(cat+'-cov-'+s,'visibility','none'); } catch(e) {}
+        });
+      }
+    });
+  });
 });
 
 // ============================================================================
@@ -1404,24 +1447,48 @@ function toggleRadarCoverage() {
 // ============================================================================
 // SELECT BASE FOR RANGE RINGS (called on marker click)
 // ============================================================================
+let _ringOrigin = null; // {name, lng, lat} — supports both built-in bases and KMZ points
+
 function selectBaseForRings(item) {
   const sel = document.getElementById('ring-base-select');
   const idx = ALL_BASES.findIndex(b => b.lat === item.lat && b.lng === item.lng);
   if (idx >= 0 && sel) {
     // Toggle off if same base clicked again
-    if (sel.value === String(idx)) {
+    if (sel.value === String(idx) && !_ringOrigin) {
       sel.value = '';
+      _ringOrigin = null;
       const lbl = document.getElementById('ring-base-label');
       if (lbl) lbl.textContent = 'No base selected';
       clearBaseConnectors();
       updateRangeRings();
       return;
     }
+    _ringOrigin = null; // clear custom origin, using built-in base
     sel.value = idx;
     const lbl = document.getElementById('ring-base-label');
     if (lbl) lbl.textContent = '\u25C9 ' + item.name;
     updateRangeRings();
   }
+}
+
+function selectKmzPointForRings(name, lng, lat) {
+  const lbl = document.getElementById('ring-base-label');
+  // Toggle off if same point clicked again
+  if (_ringOrigin && _ringOrigin.lng === lng && _ringOrigin.lat === lat) {
+    _ringOrigin = null;
+    const sel = document.getElementById('ring-base-select');
+    if (sel) sel.value = '';
+    if (lbl) lbl.textContent = 'No base selected';
+    clearBaseConnectors();
+    updateRangeRings();
+    return;
+  }
+  _ringOrigin = {name: name, lng: lng, lat: lat};
+  const sel = document.getElementById('ring-base-select');
+  if (sel) sel.value = 'kmz-custom';
+  if (lbl) lbl.textContent = '\u25C9 ' + name;
+  drawBaseConnectors({lng: lng, lat: lat});
+  updateRangeRings();
 }
 
 // ============================================================================
@@ -1439,14 +1506,19 @@ function updateRangeRings() {
     const fpSrc = map.getSource('fp-'+rt.id+'-src');
     const emptyFC = {type:'FeatureCollection',features:[]};
     const chk = document.getElementById('ring-'+rt.id);
-    if (!chk || !chk.checked || baseIdx === '') {
+    if (!chk || !chk.checked || (baseIdx === '' && !_ringOrigin)) {
       if (ringSrc) ringSrc.setData(emptyFC);
       if (fillSrc) fillSrc.setData(emptyFC);
       if (fpSrc) fpSrc.setData(emptyFC);
       return;
     }
-    const base = ALL_BASES[parseInt(baseIdx)];
-    const origin = [base.lng, base.lat];
+    let origin;
+    if (_ringOrigin) {
+      origin = [_ringOrigin.lng, _ringOrigin.lat];
+    } else {
+      const base = ALL_BASES[parseInt(baseIdx)];
+      origin = [base.lng, base.lat];
+    }
     try {
       const circle = turf.circle(origin, rt.radius, {units:'nauticalmiles',steps:72});
       if (ringSrc) ringSrc.setData({type:'FeatureCollection',features:[circle]});
@@ -1587,7 +1659,7 @@ function addKmzToMap(fileName, geojson) {
     layerIds.push(lid);
   }
 
-  // Point features as markers
+  // Point features as markers (clickable for range rings)
   points.forEach(f => {
     const coords = f.geometry.coordinates;
     const name = (f.properties && (f.properties.name || f.properties.Name)) || '';
@@ -1595,16 +1667,33 @@ function addKmzToMap(fileName, geojson) {
     const el = document.createElement('div');
     el.style.cssText = 'width:8px;height:8px;border-radius:50%;background:'+color+';border:1px solid rgba(255,255,255,0.5);cursor:pointer;box-shadow:0 0 4px '+color;
     const marker = new maplibregl.Marker({element:el}).setLngLat(coords).addTo(map);
-    if (name || desc) {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        let html = '';
-        if (name) html += '<div class="popup-title">' + name.replace(/</g,'&lt;') + '</div>';
-        if (desc) html += '<div class="popup-row">' + desc + '</div>';
-        new maplibregl.Popup({maxWidth:'350px',offset:10}).setLngLat(coords).setHTML(html).addTo(map);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const ptName = name || ('KMZ Point ' + coords[1].toFixed(3) + ', ' + coords[0].toFixed(3));
+      // Select this point for range rings
+      selectKmzPointForRings(ptName, coords[0], coords[1]);
+      // Close any existing base popup
+      if (_activeBasePopup) { _activeBasePopup.remove(); _activeBasePopup = null; }
+      // Build popup with range info
+      let html = '<div class="popup-title">' + ptName.replace(/</g,'&lt;') + '</div>';
+      html += '<div class="popup-row" style="color:#aaa">AIRSTRIP / KMZ POINT</div>';
+      html += '<div class="popup-row">' + formatCoord(coords[1], coords[0]) + '</div>';
+      if (desc) html += '<div class="popup-row">' + desc + '</div>';
+      html += '<div class="popup-divider"></div>';
+      html += '<div class="popup-subtitle">RANGE TO FLASHPOINTS:</div>';
+      RANGE_TARGETS.forEach(t => {
+        const d = nmDist(coords, t.coords);
+        const ri = rangeIndicator(d);
+        html += '<div class="popup-range"><span>' + t.name + ':</span><span>' + Math.round(d) + ' nm <span class="' + ri.cls + '">[' + ri.text + ']</span></span></div>';
       });
+      html += '<div class="popup-divider"></div>';
+      html += '<div class="popup-note">Click to toggle range rings from this point</div>';
+      _activeBasePopup = new maplibregl.Popup({maxWidth:'380px',offset:10}).setLngLat(coords).setHTML(html).addTo(map);
+      _activeBasePopup.on('close', () => { _activeBasePopup = null; });
+    });
+    if (name || desc) {
       el.addEventListener('mouseenter', (e) => {
-        showTooltip(e, '<div class="ht-title">' + name.replace(/</g,'&lt;') + '</div>' + (desc ? '<div class="ht-row">' + desc + '</div>' : ''));
+        showTooltip(e, '<div class="ht-title">' + (name || 'KMZ Point').replace(/</g,'&lt;') + '</div>' + '<div class="ht-type">AIRSTRIP — click for range rings</div>' + (desc ? '<div class="ht-row">' + desc + '</div>' : ''));
       });
       el.addEventListener('mousemove', (e) => positionTooltip(e));
       el.addEventListener('mouseleave', hideTooltip);
@@ -1633,6 +1722,16 @@ function addKmzToMap(fileName, geojson) {
 function removeKmzLayer(id) {
   const entry = _kmzLayers[id];
   if (!entry) return;
+  // Clear range rings if origin was from this layer
+  if (_ringOrigin) {
+    _ringOrigin = null;
+    const sel = document.getElementById('ring-base-select');
+    if (sel) sel.value = '';
+    const lbl = document.getElementById('ring-base-label');
+    if (lbl) lbl.textContent = 'No base selected';
+    clearBaseConnectors();
+    updateRangeRings();
+  }
   // Remove map layers
   entry.layerIds.forEach(lid => {
     try { map.removeLayer(lid); } catch(e) {}
